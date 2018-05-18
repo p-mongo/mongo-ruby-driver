@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
+describe Mongo::Auth::SCRAM256::Conversation, if: scram_sha_256_enabled? && RUBY_VERSION >= '2.2.0' do
 
   let(:user) do
     Mongo::Auth::User.new(
       database: Mongo::Database::ADMIN,
       user: 'user',
       password: 'pencil',
-      auth_mech: 'SCRAM-SHA-1'
+      auth_mech: 'SCRAM-SHA-256'
     )
   end
 
@@ -22,7 +22,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
     end
 
     before do
-      expect(SecureRandom).to receive(:base64).once.and_return('NDA2NzU3MDY3MDYwMTgy')
+      expect(SecureRandom).to receive(:base64).once.and_return('rOprNGfwEbeRWgbNEkqO')
     end
 
     let(:selector) do
@@ -38,11 +38,11 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
     end
 
     it 'sets the mechanism' do
-      expect(selector[:mechanism]).to eq('SCRAM-SHA-1')
+      expect(selector[:mechanism]).to eq('SCRAM-SHA-256')
     end
 
     it 'sets the payload' do
-      expect(selector[:payload].data).to eq('n,,n=user,r=NDA2NzU3MDY3MDYwMTgy')
+      expect(selector[:payload].data).to eq('n,,n=user,r=rOprNGfwEbeRWgbNEkqO')
     end
   end
 
@@ -62,7 +62,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
     end
 
     before do
-      expect(SecureRandom).to receive(:base64).once.and_return('NDA2NzU3MDY3MDYwMTgy')
+      expect(SecureRandom).to receive(:base64).once.and_return('rOprNGfwEbeRWgbNEkqO')
       allow(reply).to receive(:documents).and_return(documents)
     end
 
@@ -70,7 +70,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
 
       let(:payload) do
         BSON::Binary.new(
-          'r=NDA2NzU3MDY3MDYwMTgyt7/+IWaw1HaZZ5NmPJUTWapLpH2Gg+d8,s=AVvQXzAbxweH2RYDICaplw==,i=10000'
+          'r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,s=W22ZaJ0SNY7soEsUEjb6gQ==,i=4096'
         )
       end
 
@@ -88,7 +88,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
 
       it 'sets the payload' do
         expect(selector[:payload].data).to eq(
-          'c=biws,r=NDA2NzU3MDY3MDYwMTgyt7/+IWaw1HaZZ5NmPJUTWapLpH2Gg+d8,p=qYUYNy6SQ9Jucq9rFA9nVgXQdbM='
+          'c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,p=dHzbZapWIk4jUhN+Ute9ytag9zjfMHgsqmmiz7AndVQ='
         )
       end
 
@@ -101,7 +101,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
 
       let(:payload) do
         BSON::Binary.new(
-          'r=NDA2NzU4MDY3MDYwMTgyt7/+IWaw1HaZZ5NmPJUTWapLpH2Gg+d8,s=AVvQXzAbxweH2RYDICaplw==,i=10000'
+          'r=sOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,s=W22ZaJ0SNY7soEsUEjb6gQ==,i=4096'
         )
       end
 
@@ -130,7 +130,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
 
     let(:continue_payload) do
       BSON::Binary.new(
-        'r=NDA2NzU3MDY3MDYwMTgyt7/+IWaw1HaZZ5NmPJUTWapLpH2Gg+d8,s=AVvQXzAbxweH2RYDICaplw==,i=10000'
+        'r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,s=W22ZaJ0SNY7soEsUEjb6gQ==,i=4096'
       )
     end
 
@@ -148,7 +148,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
     end
 
     before do
-      expect(SecureRandom).to receive(:base64).once.and_return('NDA2NzU3MDY3MDYwMTgy')
+      expect(SecureRandom).to receive(:base64).once.and_return('rOprNGfwEbeRWgbNEkqO')
       allow(continue_reply).to receive(:documents).and_return(continue_documents)
       allow(reply).to receive(:documents).and_return(documents)
     end
@@ -156,7 +156,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
     context 'when the verifier matches the server signature' do
 
       let(:payload) do
-        BSON::Binary.new('v=gwo9E8+uifshm7ixj441GvIfuUY=')
+        BSON::Binary.new(' v=6rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4=')
       end
 
       let(:query) do
@@ -184,7 +184,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
     context 'when the verifier does not match the server signature' do
 
       let(:payload) do
-        BSON::Binary.new('v=LQ+8yhQeVL2a3Dh+TDJ7xHz4Srk=')
+        BSON::Binary.new('v=7rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4=')
       end
 
       it 'raises an error' do

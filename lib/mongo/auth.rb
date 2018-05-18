@@ -19,6 +19,7 @@ require 'mongo/auth/user'
 require 'mongo/auth/x509'
 require 'mongo/auth/roles'
 require 'mongo/auth/stringprep'
+require 'mongo/auth/scram256'
 
 module Mongo
 
@@ -50,7 +51,8 @@ module Mongo
       mongodb_cr: CR,
       mongodb_x509: X509,
       plain: LDAP,
-      scram: SCRAM
+      scram: SCRAM,
+      scram256: SCRAM256,
     }
 
     # Get the authorization strategy for the provided auth mechanism.
