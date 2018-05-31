@@ -14,15 +14,13 @@ describe Mongo::Auth::User::View do
 
     context 'when a session is not used' do
 
-      opts = {
-          password: 'password',
-          roles: [Mongo::Auth::Roles::READ_WRITE],
-      }
-
       let!(:response) do
         view.create(
           'durran',
-          opts
+          {
+            password: 'password',
+            roles: [Mongo::Auth::Roles::READ_WRITE],
+          }
         )
       end
 

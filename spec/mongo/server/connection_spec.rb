@@ -605,8 +605,6 @@ describe Mongo::Server::Connection do
       connection.connect!
     end
 
-
-
     context 'when the ismaster response indicates the auth mechanism is :scram' do
 
       let(:features) do
