@@ -7,6 +7,7 @@ describe Mongo::Auth::SCRAM::Conversation, if: scram_sha_1_enabled? do
       database: Mongo::Database::ADMIN,
       user: 'user',
       password: 'pencil',
+      # We specify SCRAM-SHA-1 so that we don't accidentally use SCRAM-SHA-256 on newer server versions.
       auth_mech: 'SCRAM-SHA-1'
     )
   end

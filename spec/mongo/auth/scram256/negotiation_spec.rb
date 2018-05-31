@@ -1,6 +1,12 @@
 require 'spec_helper'
 require 'cgi'
 
+# In order to properly test that a user that can be authenticated with either SCRAM-SHA-1 or
+# SCRAM-SHA-256 uses SCRAM-SHA-256 by default, we need to monkey patch the authenticate method to
+# save the authentication method chosen.
+#
+# Note that this will cease to be effective if the tests are parallelized, so another strategy for
+# testing the above condition will need to be implemented.
 module Mongo
   class Server
     class Connection

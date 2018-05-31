@@ -22,7 +22,12 @@ TEST_DB = 'ruby-driver'.freeze
 # @since 2.0.0
 TEST_COLL = 'test'.freeze
 
-# Whether the default auth mechanism needs to be overriden with SCRAM-SHA-1.
+# Whether the default auth mechanism needs to be overridden with SCRAM-SHA-1.
+#
+# Because saslprep will raise on error on versions of Ruby before 2.2 (due to the lack of
+# String#unicode_normalize!), we need to avoid using SCRAM-SHA-256 on those Ruby versions. However,
+# we cannot specify SCRAM-SHA-1 as the auth mechanism in server versions before 3.0, so we need
+# to check this as well.
 #
 # @since 2.6.0
 def specify_scram?
