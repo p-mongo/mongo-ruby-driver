@@ -22,7 +22,7 @@ module Mongo
     # @since 2.0.0
     class SCRAM
 
-      # The authentication mechinism string.
+      # The authentication mechanism string.
       #
       # @since 2.0.0
       MECHANISM = 'SCRAM-SHA-1'.freeze

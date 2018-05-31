@@ -25,6 +25,11 @@ module Mongo
       # @since 2.0.0
       class Conversation
 
+        # The authentication mechanism string.
+        #
+        # @since 2.6.0
+        MECHANISM = 'SCRAM-SHA-1'.freeze
+
         # The base client continue message.
         #
         # @since 2.0.0
@@ -43,7 +48,7 @@ module Mongo
         # The digest to use for encryption.
         #
         # @since 2.0.0
-        DIGEST = OpenSSL::Digest::SHA1.new.freeze
+        DIGEST = OpenSSL::Digest::SHA1
 
         # The key for the done field in the responses.
         #
@@ -177,8 +182,9 @@ module Mongo
         #
         # @since 2.0.0
         def start(connection = nil)
+          mechanism = self.class.const_get(:MECHANISM)
           if connection && connection.features.op_msg_enabled?
-            selector = CLIENT_FIRST_MESSAGE.merge(payload: client_first_message, mechanism: SCRAM::MECHANISM)
+            selector = CLIENT_FIRST_MESSAGE.merge(payload: client_first_message, mechanism: mechanism)
             selector[Protocol::Msg::DATABASE_IDENTIFIER] = user.auth_source
             cluster_time = connection.mongos? && connection.cluster_time
             selector[Operation::CLUSTER_TIME] = cluster_time if cluster_time
@@ -187,7 +193,7 @@ module Mongo
             Protocol::Query.new(
               user.auth_source,
               Database::COMMAND,
-              CLIENT_FIRST_MESSAGE.merge(payload: client_first_message, mechanism: SCRAM::MECHANISM),
+              CLIENT_FIRST_MESSAGE.merge(payload: client_first_message, mechanism: mechanism),
               limit: -1
             )
           end
@@ -493,7 +499,7 @@ module Mongo
         private
 
         def digest
-          @digest ||= OpenSSL::Digest::SHA1.new.freeze
+          @digest ||= self.class.const_get(:DIGEST).new
         end
       end
     end
