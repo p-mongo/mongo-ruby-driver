@@ -92,6 +92,17 @@ describe 'Server Discovery and Monitoring' do
             end
 
             it 'raises an UnsupportedFeatures error' do
+              # Need to ensure the servers are polled by monitoring thread
+              # prior to performing the following operations
+              deadline = Time.now + 5
+              while Time.now - deadline
+                if @client.cluster.servers.length == phase.outcome.servers.length
+                  break
+                end
+                sleep 0.25
+              end
+              expect(@client.cluster.servers.length).to eql(phase.outcome.servers.length)
+
               expect {
                 p = Mongo::ServerSelector.get(mode: :primary).select_server(@client.cluster)
                 s = Mongo::ServerSelector.get(mode: :secondary).select_server(@client.cluster)
