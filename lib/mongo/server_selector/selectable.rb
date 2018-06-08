@@ -100,6 +100,7 @@ module Mongo
         deadline = Time.now + server_selection_timeout
         while (deadline - Time.now) > 0
           servers = candidates(cluster)
+          p servers, cluster.servers
           if servers && !servers.compact.empty?
             server = servers.first
             server.check_driver_support!

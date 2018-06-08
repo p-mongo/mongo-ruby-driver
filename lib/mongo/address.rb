@@ -18,7 +18,17 @@ require 'mongo/address/unix'
 
 module Mongo
 
-  # Represents an address to a server, either with an IP address or socket
+  # Represents an address of a server.
+  #
+  # An address can be:
+  # - A host name and a port
+  # - An IP address (IPv4 or IPv6) and a port
+  # - A Unix socket path
+  #
+  # Addresses can be created without specifying the port, in which case
+  # the default port of 27017 is substituted.
+  # Contains a host name, an IP
+  # address or a socket path and an opeither with an IP address or socket
   # path.
   #
   # @since 2.0.0
