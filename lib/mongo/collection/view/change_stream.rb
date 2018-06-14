@@ -163,7 +163,11 @@ module Mongo
         def pipeline
           change_doc = { fullDocument: ( @options[:full_document] || FULL_DOCUMENT_DEFAULT ) }
           change_doc[:resumeAfter] = @resume_token if @resume_token
-          [{ '$changeStream' => change_doc }] + @change_stream_filters
+          change_stream_stage(change_doc) + @change_stream_filters
+        end
+
+        def change_stream_stage(change_doc)
+          [{ '$changeStream' => change_doc }]
         end
 
         def send_initial_query(server, session)

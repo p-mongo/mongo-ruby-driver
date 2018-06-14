@@ -92,6 +92,10 @@ module Mongo
 
           def aggregation_command
             command = BSON::Document.new(:aggregate => collection.name, :pipeline => pipeline)
+            add_options_to_aggregation_command(command)
+          end
+
+          def add_options_to_aggregation_command(command)
             command[:cursor] = cursor if cursor
             command[:readConcern] = collection.read_concern if collection.read_concern
             command.merge!(Options::Mapper.transform_documents(options, MAPPINGS))

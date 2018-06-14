@@ -263,5 +263,9 @@ module Mongo
       database = Database.new(client, client.options[:database], client.options)
       client.instance_variable_set(:@database, database)
     end
+
+    def watch(pipeline = [], options = {})
+      View::ChangeStream.new(View.new(self), pipeline, options)
+    end
   end
 end
