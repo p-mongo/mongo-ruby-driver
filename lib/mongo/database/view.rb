@@ -21,6 +21,8 @@ module Mongo
     class View
       extend Forwardable
       include Enumerable
+      include Mongo::Collection::View::Readable
+      include Mongo::Collection::View::Immutable
 
       def_delegators :@database, :cluster, :read_preference, :client
       def_delegators :cluster, :next_primary
@@ -89,6 +91,7 @@ module Mongo
         @batch_size =  nil
         @limit = nil
         @collection = @database[Database::COMMAND]
+        @options = {}
       end
 
       private
@@ -116,6 +119,43 @@ module Mongo
 
       def send_initial_query(server, session, options = {})
         initial_query_op(session, options).execute(server)
+      end
+
+      attr_reader :database
+
+      # Readable methods
+
+      def read_preference
+        database.read_preference
+      end
+
+      def server_selector
+        @server_selector ||= ServerSelector.get(read_preference || database.server_selector)
+      end
+
+      # End Readable methods
+
+      class Aggregation < Mongo::Collection::View::Aggregation
+        private
+      end
+
+      class ChangeStream < Mongo::Collection::View::ChangeStream
+        private
+
+        def aggregate_spec(session)
+          Builder::Aggregation.new(pipeline, view, options.merge(session: session)).specification
+        end
+      end
+
+      module Builder
+        class Aggregation < Mongo::Collection::View::Builder::Aggregation
+          private
+
+          def aggregation_command
+            command = BSON::Document.new(:aggregate => 1, :pipeline => pipeline)
+            add_options_to_aggregation_command(command)
+          end
+        end
       end
     end
   end

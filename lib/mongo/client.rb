@@ -462,6 +462,10 @@ module Mongo
         (raise Error::InvalidSession.new(Session::SESSIONS_NOT_SUPPORTED))
     end
 
+    def watch(pipeline = [], options = {})
+      View::ChangeStream.new(View.new(self), pipeline, options)
+    end
+
     private
 
     def get_session(options = {})
@@ -560,6 +564,38 @@ module Mongo
         end
       end
       true
+    end
+
+    class View
+      def initialize(client)
+        @client = client
+      end
+
+      attr_reader :client
+
+      class Aggregation < Mongo::Collection::View::Aggregation
+        def aggregate_spec(session)
+          Builder::Aggregation.new(pipeline, view, options.merge(session: session)).specification
+        end
+
+        def change_stream_stage(change_doc)
+          [{ '$changeStream' => change_doc.merge(:allChangesForCluster => true) }]
+        end
+      end
+
+      class ChangeStream < Aggregation
+      end
+
+      module Builder
+        class Aggregation < Mongo::Collection::View::Builder::Aggregation
+          private
+
+          def aggregation_command
+            command = BSON::Document.new(:aggregate => 1, :pipeline => pipeline)
+            add_options_to_aggregation_command(command)
+          end
+        end
+      end
     end
   end
 end
