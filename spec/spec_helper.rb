@@ -78,6 +78,25 @@ TEST_SET = 'ruby-driver-rs'
 require 'support/travis'
 require 'support/authorization'
 
+  class LoggingSubscriber
+
+    def started(event)
+      warn("COMMAND.#{event.command_name} STARTED: #{event.command.inspect}")
+    end
+
+    def succeeded(event)
+      warn("COMMAND.#{event.command_name} COMPLETED: #{event.reply.inspect} (#{event.duration}s)")
+    end
+
+    def failed(event)
+      warn("COMMAND.#{event.command_name} FAILED: #{event.message.inspect} (#{event.duration}s)")
+    end
+  end
+
+  subscriber = LoggingSubscriber.new
+  Mongo::Monitoring::Global.subscribe(Mongo::Monitoring::COMMAND, subscriber)
+
+
 RSpec.configure do |config|
   config.include(Authorization)
 
