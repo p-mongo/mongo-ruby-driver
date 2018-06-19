@@ -23,7 +23,7 @@ group :development, :testing do
       gem 'byebug'
     end
   end
-  gem 'timeout-interrupt'
+  #gem 'timeout-interrupt'
 end
 
 group :development do
