@@ -1,0 +1,5 @@
+version: 2
+exclude_patterns:
+  - lib/mongo/auth/stringprep/tables.rb
+  - lib/mongo/auth/stringprep/unicode_normalize/normalize.rb
+  - lib/mongo/auth/stringprep/unicode_normalize/tables.rb
