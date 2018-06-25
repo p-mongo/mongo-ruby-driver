@@ -342,10 +342,12 @@ Dir['./spec/support/shared/*.rb'].sort.each { |file| require file }
 def check_configured_client
   $mongo_client ||= initialize_scanned_client!
   if $mongo_client.cluster.addresses.empty?
-    raise "Configured client has no addresses, the tests will fail"
+    $stderr.puts "Configured client has no addresses, the tests will fail"
+    exit 4
   end
   if $mongo_client.cluster.servers.empty?
-    raise "Configured client has discovered no suitable servers, the tests will fail (try CLIENT_DEBUG=1 and check mongod configuration)"
+    $stderr.puts "Configured client has discovered no suitable servers, the tests will fail (try CLIENT_DEBUG=1 and check mongod configuration)"
+    exit 4
   end
 end
 
