@@ -234,6 +234,13 @@ module Mongo
       end
     end
 
+    # Stops the background threads monitoring this cluster and releases resources.
+    #
+    # @since 2.6.0
+    def finalize
+      self.class.finalize(pools, @periodic_executor, @session_pool).call
+    end
+
     # Get the nicer formatted string for use in inspection.
     #
     # @example Inspect the cluster.

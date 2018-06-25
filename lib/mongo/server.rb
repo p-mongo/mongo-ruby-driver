@@ -139,17 +139,26 @@ module Mongo
       monitor.stop! and true
     end
 
-    # When the server is flagged for garbage collection, stop the monitor
-    # thread.
+    # Returns a finalizer to be used with ObjectSpace.define_finalizer
+    # that will stop the monitor thread.
     #
-    # @example Finalize the object.
+    # @example Get the finalizer.
     #   Server.finalize(monitor)
     #
     # @param [ Server::Monitor ] monitor The server monitor.
     #
+    # @return [ Proc ] The Finalizer.
+    #
     # @since 2.2.0
     def self.finalize(monitor)
       proc { monitor.stop! }
+    end
+
+    # Stops the background thread monitoring this server.
+    #
+    # @since 2.6.0
+    def finalize
+      monitor.stop!
     end
 
     # Instantiate a new server object. Will start the background refresh and

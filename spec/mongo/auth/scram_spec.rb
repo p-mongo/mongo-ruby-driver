@@ -31,6 +31,11 @@ describe Mongo::Auth::SCRAM do
     Mongo::Server.new(address, cluster, monitoring, listeners, TEST_OPTIONS)
   end
 
+  after do
+    server.finalize
+    cluster.finalize
+  end
+
   let(:connection) do
     Mongo::Server::Connection.new(server, TEST_OPTIONS)
   end
