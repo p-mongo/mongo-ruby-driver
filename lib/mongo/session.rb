@@ -115,6 +115,17 @@ module Mongo
     #   - *:mode* -- the read preference as a string or symbol; valid values are
     #     *:primary*, *:primary_preferred*, *:secondary*, *:secondary_preferred*
     #     and *:nearest*.
+    # @option options [ true | false ] :implicit
+    # @option options [ Session ] :session
+    # @option options [ true | false ] :limit
+    # @option options [ true | false ] :sort
+    # @option options [ true | false ] :full_document
+    # @option options [ true | false ] :mode
+    # @option options [ Time | BSON::Timestamp ] :start_at_operation_time
+    # @option options [ Time | BSON::Timestamp ] :resume_after
+    # @option options [ Time | BSON::Timestamp ] :batch_size
+    # @option options [ Time | BSON::Timestamp ] :collation
+    # @option options [ Time | BSON::Timestamp ] :projection
     #
     # @since 2.5.0
     def initialize(server_session, client, options = {})
