@@ -42,6 +42,20 @@ rescue LoadError
   end
 end
 
+if ENV['TEST_ENV_NUMBER']
+  require 'json'
+  test_number = ENV['TEST_ENV_NUMBER']
+  if test_number == ""
+    test_number = "1"
+  end
+  config = JSON.parse(ENV['PARALLEL_CONFIGS'])[test_number]
+  if config
+    config.each do |k, v|
+      ENV[k] = v
+    end
+  end
+end
+
 require 'support/spec_config'
 
 Mongo::Logger.logger = Logger.new($stdout)
