@@ -1,3 +1,5 @@
 --tty
 --colour
 --format Fuubar
+--format RspecJunitFormatter
+--out tmp/rspec<%= ENV["TEST_ENV_NUMBER"] %>.xml
