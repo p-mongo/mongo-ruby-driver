@@ -57,14 +57,17 @@ describe 'Server Discovery and Monitoring' do
             end
 
             it "sets the cluster topology to #{phase.outcome.topology_type}" do
+              expect(@client).not_to be_nil
               expect(@client.cluster).to be_topology(phase.outcome.topology_type)
             end
 
             it "sets the cluster replica set name to #{phase.outcome.set_name.inspect}" do
+              expect(@client).not_to be_nil
               expect(@client.cluster.replica_set_name).to eq(phase.outcome.set_name)
             end
 
             it "sets the cluster logical session timeout minutes to #{phase.outcome.logical_session_timeout.inspect}" do
+              expect(@client).not_to be_nil
               expect(@client.cluster.logical_session_timeout).to eq(phase.outcome.logical_session_timeout)
             end
 
@@ -75,10 +78,12 @@ describe 'Server Discovery and Monitoring' do
             phase.outcome.servers.each do |uri, server|
 
               it "sets #{uri} to #{server['type']}" do
+                expect(@client).not_to be_nil
                 expect(find_server(@client, uri)).to be_server_type(server['type'])
               end
 
               it "sets #{uri} replica set name to #{server['setName'].inspect}" do
+                expect(@client).not_to be_nil
                 expect(find_server(@client, uri).replica_set_name).to eq(server['setName'])
               end
             end
