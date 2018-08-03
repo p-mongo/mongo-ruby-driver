@@ -19,6 +19,7 @@ describe Mongo::Operation::Indexes do
     end
 
     before do
+      authorized_collection.indexes.drop_all
       authorized_collection.indexes.create_one(index_spec, unique: true)
     end
 
