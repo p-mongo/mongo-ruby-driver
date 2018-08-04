@@ -8,12 +8,15 @@ before_install:
 
 install: ruby -S bundle install --without release development
 
-before_script:
-  - wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VERSION}.tgz -O /tmp/mongodb.tgz
-  - tar -xvf /tmp/mongodb.tgz
-  - mkdir /tmp/data
-  - ${PWD}/mongodb-linux-x86_64-${MONGODB_VERSION}/bin/mongod --setParameter enableTestCommands=1 --dbpath /tmp/data --bind_ip 127.0.0.1 --auth &> /dev/null &
-  - export MONGODB_VERSION=${MONGODB_VERSION}
+  set -e
+  wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VERSION}.tgz -O /tmp/mongodb.tgz
+  tar -xvf /tmp/mongodb.tgz
+  cp ${PWD}/mongodb-linux-x86_64-${MONGODB_VERSION}/bin/mongod $HOME
+  mkdir /tmp/data
+  if test $CONCURRENCY = 0; then
+    ${PWD}/mongodb-linux-x86_64-${MONGODB_VERSION}/bin/mongod --dbpath /tmp/data --bind_ip 127.0.0.1 --auth &> /dev/null &
+  fi
+  export MONGODB_VERSION=${MONGODB_VERSION}
 
 rvm:
   - 2.5
@@ -37,8 +40,9 @@ script: |
   if test $CONCURRENCY = 0; then
     bundle exec rake spec:ci
   else
+    pip install 'mtools[all]'
     git clone https://github.com/p-mongo/dev $HOME/dev
-    $HOME/dev/script/driver-ps -c $CONCURRENCY -- --master-is-1
+    $HOME/dev/script/driver-ps-travis -c $CONCURRENCY -- --master-is-1
   fi
 
 notifications:
