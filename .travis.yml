@@ -46,7 +46,7 @@ script: |
     bundle exec rake spec:ci
   else
     git clone https://github.com/p-mongo/dev $HOME/dev
-    $HOME/dev/script/driver-ps-travis -c $CONCURRENCY -- --master-is-1
+    CLIENT_DEBUG=1 $HOME/dev/script/driver-ps-travis -c $CONCURRENCY -- --master-is-1
   fi
 
 notifications:
