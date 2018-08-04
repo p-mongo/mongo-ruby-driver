@@ -4,6 +4,7 @@ gemspec
 gem 'yard'
 
 group :development, :testing do
+  gem 'paraspec'
   gem 'jruby-openssl', :platforms => [ :jruby ]
   gem 'json', :platforms => [ :jruby ]
   gem 'rspec', '~> 3.0'
