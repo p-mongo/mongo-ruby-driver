@@ -47,7 +47,7 @@ script: |
   else
     git clone https://github.com/p-mongo/dev $HOME/dev
     git clone https://github.com/paraspec/paraspec $HOME/paraspec
-    CLIENT_DEBUG=1 $HOME/dev/script/driver-ps-travis -c $CONCURRENCY --paraspec-path=$HOME/paraspec/bin/paraspec -- --master-is-1 -d state
+    $HOME/dev/script/driver-ps-travis -c $CONCURRENCY --paraspec-path=$HOME/paraspec/bin/paraspec -- --master-is-1
   fi
 
 notifications:
