@@ -40,7 +40,7 @@ env:
     - CONCURRENCY=4
 
 script: |
-  set -e
+  set -ex
   if test $CONCURRENCY = 0; then
     export 'MONGODB_URI=mongodb://localhost:27100,localhost:27101/?replicaSet=ruby-driver-rs'
     bundle exec rake spec:ci
