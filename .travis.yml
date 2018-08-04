@@ -9,14 +9,18 @@ before_install:
 install: ruby -S bundle install --without release development
 
   set -e
-  wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VERSION}.tgz -O /tmp/mongodb.tgz
-  tar -xvf /tmp/mongodb.tgz
-  cp ${PWD}/mongodb-linux-x86_64-${MONGODB_VERSION}/bin/mongod $HOME
-  mkdir /tmp/data
-  if test $CONCURRENCY = 0; then
-    ${PWD}/mongodb-linux-x86_64-${MONGODB_VERSION}/bin/mongod --dbpath /tmp/data --bind_ip 127.0.0.1 --auth &> /dev/null &
-  fi
-  export MONGODB_VERSION=${MONGODB_VERSION}
+    wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VERSION}.tgz -O /tmp/mongodb.tgz
+    tar -xvf /tmp/mongodb.tgz
+    cp ${PWD}/mongodb-linux-x86_64-${MONGODB_VERSION}/bin/mongod $HOME
+    mkdir /tmp/data
+    pip install 'mtools[all]' --user
+    if test $CONCURRENCY = 0; then
+      mlaunch --replicaset --dir /tmp/rs --name ruby-driver-rs \
+        --wiredTigerCacheSizeGB 0.25 --setParameter enableTestCommands=1 \
+        --binarypath $HOME --port 27100
+      ${PWD}/mongodb-linux-x86_64-${MONGODB_VERSION}/bin/mongod --dbpath /tmp/data --bind_ip 127.0.0.1 --auth &> /dev/null &
+    fi
+    export MONGODB_VERSION=${MONGODB_VERSION}
 
 rvm:
   - 2.5
@@ -38,9 +42,9 @@ env:
 script: |
   set -e
   if test $CONCURRENCY = 0; then
+    export 'MONGODB_URI=mongodb://localhost:27100,localhost:27101/?replicaSet=ruby-driver-rs'
     bundle exec rake spec:ci
   else
-    pip install 'mtools[all]' --user
     git clone https://github.com/p-mongo/dev $HOME/dev
     $HOME/dev/script/driver-ps-travis -c $CONCURRENCY -- --master-is-1
   fi
