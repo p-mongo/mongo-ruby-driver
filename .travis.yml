@@ -40,7 +40,7 @@ script: |
   if test $CONCURRENCY = 0; then
     bundle exec rake spec:ci
   else
-    pip install 'mtools[all]'
+    pip install 'mtools[all]' --user
     git clone https://github.com/p-mongo/dev $HOME/dev
     $HOME/dev/script/driver-ps-travis -c $CONCURRENCY -- --master-is-1
   fi
