@@ -13,7 +13,7 @@ install: ruby -S bundle install --without release development
     tar -xvf /tmp/mongodb.tgz
     cp ${PWD}/mongodb-linux-x86_64-${MONGODB_VERSION}/bin/mongod $HOME
     mkdir /tmp/data
-    pip install 'mtools' --user
+    pip install mtools psutil --user
     if test $CONCURRENCY = 0; then
       mlaunch --replicaset --dir /tmp/rs --name ruby-driver-rs \
         --wiredTigerCacheSizeGB 0.25 --setParameter enableTestCommands=1 \
