@@ -46,7 +46,8 @@ script: |
     bundle exec rake spec:ci
   else
     git clone https://github.com/p-mongo/dev $HOME/dev
-    CLIENT_DEBUG=1 $HOME/dev/script/driver-ps-travis -c $CONCURRENCY -- --master-is-1 -d state
+    git clone https://github.com/paraspec/paraspec $HOME
+    CLIENT_DEBUG=1 $HOME/dev/script/driver-ps-travis -c $CONCURRENCY --paraspec-path=$HOME/paraspec/bin/paraspec -- --master-is-1 -d state
   fi
 
 notifications:
