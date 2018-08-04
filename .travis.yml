@@ -16,7 +16,6 @@ before_script:
   - export MONGODB_VERSION=${MONGODB_VERSION}
 
 rvm:
-  - 1.9.3
   - 2.5
 
 branches:
@@ -24,19 +23,14 @@ branches:
     - master
     - 2.5-stable
 
-matrix:
-  exclude:
-    - rvm: 1.9.3
-      env: MONGODB_VERSION=4.0.1
-    - rvm: 2.5
-      env: MONGODB_VERSION=2.6.12
-
 env:
   global:
     - CI="travis"
+    - MONGODB_VERSION=4.0.0
   matrix:
-    - MONGODB_VERSION=2.6.12
-    - MONGODB_VERSION=4.0.1
+    - CONCURRENCY=0
+    - CONCURRENCY=2
+    - CONCURRENCY=4
 
 script: bundle exec rake spec:ci
 
