@@ -135,8 +135,8 @@ module Mongo
       def run!
         @thread = Thread.new(heartbeat_frequency) do |i|
           loop do
-            sleep(i)
             scan!
+            sleep(i)
           end
         end
       end

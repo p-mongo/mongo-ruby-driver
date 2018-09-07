@@ -55,6 +55,17 @@ describe Mongo::Client do
         end
       end
     end
+
+    it 'does not perform i/o' do
+      allow_any_instance_of(Mongo::Server::Monitor).to receive(:run!)
+      expect_any_instance_of(Mongo::Server::Monitor).not_to receive(:scan!)
+      start_time = Time.now
+      # return should be instant
+      c = Timeout.timeout(1) do
+        Mongo::Client.new(['1.1.1.1'])
+      end
+      c.close
+    end
   end
 
   describe '#==' do

@@ -197,7 +197,6 @@ module Mongo
         Monitoring::SERVER_OPENING,
         Monitoring::Event::ServerOpening.new(address, cluster.topology)
       )
-      monitor.scan!
       monitor.run!
       ObjectSpace.define_finalizer(self, self.class.finalize(monitor))
     end
