@@ -295,6 +295,7 @@ class ScannedClientHasNoServers < StandardError; end
 
 def scanned_client_server!
   $mongo_client ||= initialize_scanned_client!
+  # wait for a server to be selected
   $mongo_client.database_names
   server = $mongo_client.cluster.servers.first
   if server.nil?
