@@ -293,7 +293,7 @@ describe Mongo::Operation::Result do
     before do
       class Result
         def get_result(address)
-          Mongo::Client.new([address], TEST_OPTIONS).database.command(:ping => 1)
+          new_local_client([address], TEST_OPTIONS).database.command(:ping => 1)
         end
       end
     end
