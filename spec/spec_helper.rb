@@ -83,13 +83,13 @@ require 'lite_spec_helper'
 TEST_SET = 'ruby-driver-rs'
 
 require 'support/travis'
+require 'support/client_registry'
 require 'support/authorization'
 require 'support/primary_socket'
 require 'support/constraints'
 require 'support/cluster_config'
-require 'support/client_registry'
-require 'support/client_registry_macros'
 require 'rspec/retry'
+require 'support/client_registry_macros'
 
 RSpec.configure do |config|
   config.include(Authorization)
