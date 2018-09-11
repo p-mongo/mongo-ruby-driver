@@ -122,7 +122,7 @@ AUTHORIZED_CLIENT = ClientRegistry.instance.new_global_client(
 # Provides an authorized mongo client that retries writes.
 #
 # @since 2.5.1
-AUTHROIZED_CLIENT_WITH_RETRY_WRITES = AUTHORIZED_CLIENT.with(retry_writes: true)
+AUTHORIZED_CLIENT_WITH_RETRY_WRITES = AUTHORIZED_CLIENT.with(retry_writes: true)
 
 # Provides an unauthorized mongo client on the default test database.
 #
@@ -164,7 +164,7 @@ SUBSCRIBED_CLIENT = ClientRegistry.instance.new_global_client(
       password: TEST_USER.password)
 )
 SUBSCRIBED_CLIENT.subscribe(Mongo::Monitoring::COMMAND, EventSubscriber)
-AUTHROIZED_CLIENT_WITH_RETRY_WRITES.subscribe(Mongo::Monitoring::COMMAND, EventSubscriber)
+AUTHORIZED_CLIENT_WITH_RETRY_WRITES.subscribe(Mongo::Monitoring::COMMAND, EventSubscriber)
 
 module Authorization
 
@@ -196,7 +196,7 @@ module Authorization
     # @since 2.5.1
     context.let(:authorized_client_with_retry_writes) do
       EventSubscriber.clear_events!
-      AUTHROIZED_CLIENT_WITH_RETRY_WRITES
+      AUTHORIZED_CLIENT_WITH_RETRY_WRITES
     end
 
     # Provides an authorized mongo client that has a Command subscriber.
