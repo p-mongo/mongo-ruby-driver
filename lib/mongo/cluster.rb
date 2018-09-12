@@ -367,7 +367,11 @@ module Mongo
       address = Address.new(host)
       removed_servers = @servers.select { |s| s.address == address }
       @update_lock.synchronize { @servers = @servers - removed_servers }
-      removed_servers.each{ |server| server.disconnect! } if removed_servers
+      if removed_servers
+        removed_servers.each do |server|
+          server.disconnect!
+        end
+      end
       publish_sdam_event(
         Monitoring::SERVER_CLOSED,
         Monitoring::Event::ServerClosed.new(address, topology)
@@ -425,7 +429,9 @@ module Mongo
     # @since 2.1.0
     def disconnect!
       @periodic_executor.stop!
-      @servers.each { |server| server.disconnect! }
+      @servers.each do |server|
+        server.disconnect!
+      end
       true
     end
 
@@ -439,7 +445,9 @@ module Mongo
     # @since 2.1.0
     def reconnect!
       scan!
-      servers.each { |server| server.reconnect! }
+      servers.each do |server|
+        server.reconnect!
+      end
       @periodic_executor.restart!
       true
     end
