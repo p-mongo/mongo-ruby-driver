@@ -185,6 +185,7 @@ module Mongo
       @cluster_time = nil
       @cluster_time_lock = Mutex.new
       @topology = Topology.initial(seeds, monitoring, options)
+      @ref_count = 1
       Session::SessionPool.create(self)
 
       # The opening topology is always unknown with no servers.
@@ -401,6 +402,19 @@ module Mongo
       topology.servers(servers_list.compact).compact
     end
 
+    # @api private
+    def inc_ref!
+      @ref_count += 1
+    end
+
+    # @api private
+    def dec_ref!
+      @ref_count -= 1
+      if @ref_count <= 0
+        disconnect!
+      end
+    end
+
     # Disconnect all servers.
     #
     # @example Disconnect the cluster's servers.
@@ -411,7 +425,8 @@ module Mongo
     # @since 2.1.0
     def disconnect!
       @periodic_executor.stop!
-      @servers.each { |server| server.disconnect! } and true
+      @servers.each { |server| server.disconnect! }
+      true
     end
 
     # Reconnect all servers.
@@ -425,7 +440,8 @@ module Mongo
     def reconnect!
       scan!
       servers.each { |server| server.reconnect! }
-      @periodic_executor.restart! and true
+      @periodic_executor.restart!
+      true
     end
 
     # Add hosts in a description to the cluster.

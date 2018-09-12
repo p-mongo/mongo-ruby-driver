@@ -285,6 +285,7 @@ module Mongo
         sdam_proc.call(self)
       end
       @cluster = Cluster.new(addresses, monitoring, @options)
+      @open = true
       yield(self) if block_given?
     end
 
@@ -381,6 +382,8 @@ module Mongo
         # have changed.
         if cluster_modifying?(opts)
           Cluster.create(client)
+        else
+          @cluster.inc_ref!
         end
       end
     end
@@ -420,7 +423,11 @@ module Mongo
     #
     # @since 2.1.0
     def close
-      @cluster.disconnect! and true
+      if @open
+        @cluster.dec_ref
+        @open = false
+      end
+      true
     end
 
     # Reconnect the client.
@@ -435,10 +442,12 @@ module Mongo
       addresses = cluster.addresses.map(&:to_s)
       monitoring = cluster.monitoring
 
-      @cluster.disconnect! rescue nil
+      # Only close cluster if we have an active reference to it.
+      # Hence call the close method rather than disconnect! on cluster directly.
+      close
 
       @cluster = Cluster.new(addresses, monitoring, options)
-      true
+      @open = true
     end
 
     # Get the names of all databases.
