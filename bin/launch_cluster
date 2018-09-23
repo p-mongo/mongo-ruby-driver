@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+class Runner
+  def initialize(options)
+    @options = options
+    @child_pids = []
+  end
+
+  attr_reader :options, :child_pids
+
+  def run
+    launch([options[:binary_path]])
+    sleep 2
+  ensure
+    @child_pids.each do |pid|
+      begin
+        Process.kill('TERM', pid)
+      rescue Errno
+      end
+      begin
+        Process.wait(pid)
+      rescue Errno
+      end
+    end
+  end
+
+  def launch(cmd)
+    if pid = fork
+      # parent
+      @child_pids << pid
+    else
+      # child
+      exec(*cmd)
+    end
+  end
+end
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = 'Usage: launch_cluster [options]'
+
+  opts.on('-r', '--replica-set=NAME', 'Set topology to replica set and specify replica set name') do |v|
+    options.delete(:sharded)
+    options[:replica_set] = v
+  end
+
+  opts.on('-s', '--sharded=NUM', 'Set topology to sharded cluster and specify number of shards') do |v|
+    options.delete(:replica_set)
+    options[:sharded] = v.to_i
+  end
+
+  opts.on('-p', '--port=PORT', 'Override starting port (default 27017)') do |v|
+    options[:port] = v.to_i
+  end
+
+  opts.on('-b', '--binary-path=PATH', 'Specify full path to mongod') do |v|
+    options[:binary_path] = v
+  end
+
+  opts.on('-d', '--dir', 'Path to cluster files') do |v|
+    options[:dir] = v
+  end
+
+  opts.on('-t', '--test-commands', 'Enable test commands in the cluster') do
+    options[:test_commands] = true
+  end
+end.parse!
+
+options[:binary_path] ||= 'mongod'
+
+Runner.new(options).run
