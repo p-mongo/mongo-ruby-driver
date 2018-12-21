@@ -123,3 +123,77 @@ if SpecConfig.instance.active_support?
   require "active_support/time"
   require 'mongo/active_support'
 end
+
+class CommandLogSubscriber
+  include Mongo::Loggable
+
+  def started(event)
+    log_warn("#{prefix(event)} | STARTED | #{format_command(event.command)}")
+  end
+
+  def succeeded(event)
+    log_warn("#{prefix(event)} | SUCCEEDED | #{event.duration}s | #{event.reply.inspect}")
+  end
+
+  def failed(event)
+    log_warn("#{prefix(event)} | FAILED | #{event.message} | #{event.duration}s")
+  end
+
+  private
+
+  def logger
+    Mongo::Logger.logger
+  end
+
+  def format_command(args)
+    begin
+      args.inspect
+    rescue Exception
+      '<Unable to inspect arguments>'
+    end
+  end
+
+  def format_message(message)
+    format("COMMAND | %s".freeze, message)
+  end
+
+  def prefix(event)
+    "#{event.address.to_s} | #{event.database_name}.#{event.command_name}"
+  end
+end
+
+class HeartbeatLogSubscriber
+  include Mongo::Loggable
+
+  def started(event)
+    log_warn("#{event.address} | STARTED")
+  end
+
+  def succeeded(event)
+    log_warn("#{event.address} | SUCCEEDED | #{event.duration}s")
+  end
+
+  def failed(event)
+    log_warn("#{event.address} | FAILED | #{event.error.class}: #{event.error.message} | #{event.duration}s")
+  end
+
+  private
+
+  def logger
+    Mongo::Logger.logger
+  end
+
+  def format_message(message)
+    format("HEARTBEAT | %s".freeze, message)
+  end
+end
+
+if ENV['CML']
+  command_log_subscriber = CommandLogSubscriber.new
+  Mongo::Monitoring::Global.subscribe(Mongo::Monitoring::COMMAND, command_log_subscriber)
+end
+
+if ENV['HBL']
+  heartbeat_log_subscriber = HeartbeatLogSubscriber.new
+  Mongo::Monitoring::Global.subscribe(Mongo::Monitoring::SERVER_HEARTBEAT, heartbeat_log_subscriber)
+end
