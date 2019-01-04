@@ -308,6 +308,7 @@ module Mongo
     # Update the state of the session due to a (non-commit and non-abort) operation being run.
     #
     # @since 2.6.0
+    # @api private
     def update_state!
       case @state
       when STARTING_TRANSACTION_STATE
