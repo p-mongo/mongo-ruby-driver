@@ -422,8 +422,8 @@ module Mongo
     #
     # @since 2.5.0
     def session_id
-      if @server_session.nil?
-        raise ArgumentError, "This session was ended and cannot be used"
+      if ended?
+        raise Error::SessionEnded
       end
 
       @server_session.session_id
@@ -438,8 +438,8 @@ module Mongo
     #
     # @since 2.5.0
     def next_txn_num
-      if @server_session.nil?
-        raise ArgumentError, "This session was ended and cannot be used"
+      if ended?
+        raise Error::SessionEnded
       end
 
       @server_session.next_txn_num
@@ -454,8 +454,8 @@ module Mongo
     #
     # @since 2.6.0
     def txn_num
-      if @server_session.nil?
-        raise ArgumentError, "This session was ended and cannot be used"
+      if ended?
+        raise Error::SessionEnded
       end
 
       @server_session.txn_num
