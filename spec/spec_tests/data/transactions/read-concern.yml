@@ -393,6 +393,7 @@ tests:
     outcome: *outcome
 
   - description: find ignores collection readConcern
+    skipReason: "RUBY-1412 Test only the initial command in a transaction includes readConcern"
 
     operations:
       - *startTransactionNoReadConcern
@@ -459,6 +460,7 @@ tests:
     outcome: *outcome
 
   - description: aggregate ignores collection readConcern
+    skipReason: "RUBY-1412 Test only the initial command in a transaction includes readConcern"
 
     operations:
       - *startTransactionNoReadConcern
@@ -533,6 +535,7 @@ tests:
     outcome: *outcome
 
   - description: distinct ignores collection readConcern
+    skipReason: "RUBY-1412 Test only the initial command in a transaction includes readConcern"
 
     operations:
       - *startTransactionNoReadConcern
