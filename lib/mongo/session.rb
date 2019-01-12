@@ -145,7 +145,12 @@ module Mongo
     #
     # @since 2.5.0
     def inspect
-      "#<Mongo::Session:0x#{object_id} session_id=#{session_id} options=#{@options}>"
+      session_id = if ended?
+        'ended'
+      else
+        "session_id=#{self.session_id}"
+      end
+      "#<Mongo::Session:0x#{object_id} #{session_id} options=#{@options}>"
     end
 
     # End this session.

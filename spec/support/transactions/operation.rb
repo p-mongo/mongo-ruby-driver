@@ -222,7 +222,7 @@ module Mongo
       end
 
       def count_documents(collection)
-        collection.count_documents(filter, options).to_s
+        collection.count_documents(filter, options)
       end
 
       def delete_many(collection)

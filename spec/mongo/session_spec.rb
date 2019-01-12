@@ -56,6 +56,16 @@ describe Mongo::Session do
                                              causal_consistency: true }.to_s)
       end
     end
+
+    context 'when session was ended' do
+      before do
+        session.end_session
+      end
+
+      it 'works' do
+        expect(session.inspect).to include('ended')
+      end
+    end
   end
 
   describe '#advance_cluster_time' do
