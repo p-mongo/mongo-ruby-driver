@@ -9,6 +9,7 @@ data: &data
 
 tests:
   - description: only first countDocuments includes readConcern
+    skipReason: "RUBY-1665 Read commands must start transaction"
 
     operations:
       - &startTransaction
@@ -164,6 +165,7 @@ tests:
           *data
 
   - description: only first aggregate includes readConcern
+    skipReason: "RUBY-1665 Read commands must start transaction"
 
     operations:
       - *startTransaction
@@ -345,6 +347,7 @@ tests:
     outcome: *outcome
 
   - description: countDocuments ignores collection readConcern
+    skipReason: "RUBY-1665 Read commands must start transaction"
 
     operations:
       - &startTransactionNoReadConcern
