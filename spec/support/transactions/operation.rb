@@ -37,6 +37,7 @@ module Mongo
         'findOneAndUpdate' => :find_one_and_update,
         'bulkWrite' => :bulk_write,
         'count' => :count,
+        'countDocuments' => :count_documents,
         'distinct' => :distinct,
         'find' => :find,
         'runCommand' => :run_command,
@@ -124,7 +125,14 @@ module Mongo
                 collection
               end
 
-        if (op_name = OPERATIONS[name]) == :with_transaction
+        if obj.nil?
+          raise "Got a nil object for #{object}"
+        end
+        if (op_name = OPERATIONS[name]).nil?
+          raise "Unknown operation #{name}"
+        end
+
+        if op_name == :with_transaction
           args = [collection]
         else
           args = []
@@ -211,6 +219,10 @@ module Mongo
 
       def count(collection)
         collection.count(filter, options).to_s
+      end
+
+      def count_documents(collection)
+        collection.count_documents(filter, options).to_s
       end
 
       def delete_many(collection)
