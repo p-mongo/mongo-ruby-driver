@@ -47,7 +47,7 @@ describe 'Stepdown behavior' do
 
       expect(get_more_events.length).to eq(1)
 
-      # get more should have been sent on the same connection as find
+      # getMore should have been sent on the same connection as find
       get_more_socket_object_id = get_more_events.first.socket_object_id
       expect(get_more_socket_object_id).to eq(find_socket_object_id)
     end
