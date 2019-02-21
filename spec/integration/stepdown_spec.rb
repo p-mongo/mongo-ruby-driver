@@ -50,12 +50,6 @@ describe 'Stepdown behavior' do
       # get more should have been sent on the same connection as find
       get_more_socket_object_id = get_more_events.first.socket_object_id
       expect(get_more_socket_object_id).to eq(find_socket_object_id)
-
-      find_events = EventSubscriber.started_events.select do |event|
-        event.command['find']
-      end
-
-      expect(find_events.length).to eq(0)
     end
   end
 end
