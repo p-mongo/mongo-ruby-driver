@@ -40,6 +40,8 @@ module Mongo
         # @return [ Integer ] request_id The request id.
         attr_reader :request_id
 
+        # object_id of the socket object used for this command.
+        #
         # @api private
         attr_reader :socket_object_id
 
