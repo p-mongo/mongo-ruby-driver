@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe 'Stepdown behavior' do
+  min_server_fcv '4.2'
+
   describe 'getMore iteration' do
     let(:collection) { authorized_client['stepdown'] }
 
