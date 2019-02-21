@@ -4,7 +4,7 @@ describe 'Stepdown behavior' do
   min_server_fcv '4.2'
 
   describe 'getMore iteration' do
-    let(:collection) { authorized_client['stepdown'] }
+    let(:collection) { subscribed_client['stepdown'] }
 
     before do
       collection.insert_many([{test: 1}] * 100)
@@ -20,6 +20,8 @@ describe 'Stepdown behavior' do
 
       ClusterTools.instance.change_primary
 
+      EventSubscriber.clear_events!
+
       # exhaust the batch
       9.times do
         enum.next
@@ -28,6 +30,18 @@ describe 'Stepdown behavior' do
       # this should issue a getMore
       item = enum.next
       expect(item['test']).to eq(1)
+
+      get_more_events = EventSubscriber.started_events.select do |event|
+        event.command['getMore']
+      end
+
+      expect(get_more_events.length).to eq(1)
+
+      find_events = EventSubscriber.started_events.select do |event|
+        event.command['find']
+      end
+
+      expect(find_events.length).to eq(0)
     end
   end
 end
