@@ -15,8 +15,8 @@
 module Mongo
   class Server
 
-    # This object is responsible for keeping server status up to date, running in
-    # a separate thread as to not disrupt other operations.
+    # This object is responsible for keeping server status up to date, running
+    # in a separate thread as to not disrupt other operations.
     #
     # @since 2.0.0
     class Monitor
@@ -24,16 +24,31 @@ module Mongo
       extend Forwardable
       include Event::Publisher
 
-      # The default time for a server to refresh its status is 10 seconds.
+      # The default time between background server scans, in seconds.
       #
-      # @since 2.0.0
-      HEARTBEAT_FREQUENCY = 10.freeze
+      # @since 2.8.0
+      DEFAULT_HEARTBEAT_INTERVAL = 10.freeze
 
-      # The minimum time between forced server scans. Is
-      # minHeartbeatFrequencyMS in the SDAM spec.
+      # The default time between background server scans, in seconds.
       #
       # @since 2.0.0
-      MIN_SCAN_FREQUENCY = 0.5.freeze
+      # @deprecated
+      HEARTBEAT_FREQUENCY = DEFAULT_HEARTBEAT_INTERVAL
+
+      # Minimum time between consecutive server scans of the same server,
+      # in seconds. This value corresponds ot minHeartbeatFrequencyMS in the
+      # SDAM spec.
+      #
+      # @since 2.8.0
+      MIN_SCAN_INTERVAL = 0.5.freeze
+
+      # Minimum time between consecutive server scans of the same server,
+      # in seconds. This value corresponds ot minHeartbeatFrequencyMS in the
+      # SDAM spec.
+      #
+      # @since 2.0.0
+      # @deprecated
+      MIN_SCAN_FREQUENCY = MIN_SCAN_INTERVAL
 
       # The weighting factor (alpha) for calculating the average moving round trip time.
       #
