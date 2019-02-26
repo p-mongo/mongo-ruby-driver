@@ -1,31 +1,9 @@
 require 'spec_helper'
 
-class TestHeartbeatSubscriber
-  def initialize
-    @started_events = []
-    @succeeded_events = []
-    @failed_events = []
-  end
-
-  attr_reader :started_events, :succeeded_events, :failed_events
-
-  def started(event)
-    @started_events << event
-  end
-
-  def succeeded(event)
-    @succeeded_events << event
-  end
-
-  def failed(event)
-    @failed_events << event
-  end
-end
-
 describe 'Heartbeat events' do
   class HeartbeatEventsSpecTestException < StandardError; end
 
-  let(:subscriber) { TestHeartbeatSubscriber.new }
+  let(:subscriber) { EventSubscriber.new }
 
   before(:all) do
     ClientRegistry.instance.close_all_clients
