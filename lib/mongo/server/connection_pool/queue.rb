@@ -199,6 +199,16 @@ module Mongo
           mutex.synchronize do
             if connection.generation == @generation
               queue.unshift(connection.record_checkin!)
+
+              # Note: if an event handler raises, resource will not be broadcast.
+              # This means threads waiting for a connection to free up when
+              # the pool is at max size may time out.
+              # Threads that begin waiting after this method completes (with
+              # the exception) should be fine.
+              publish_cmap_event(
+                Monitoring::Event::Cmap::ConnectionCheckedIn.new(address, connection.id)
+              )
+
               resource.broadcast
             else
               connection.disconnect!

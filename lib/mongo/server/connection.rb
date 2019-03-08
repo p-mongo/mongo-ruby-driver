@@ -99,6 +99,10 @@ module Mongo
         @last_checkin = nil
         @auth_mechanism = nil
         @pid = Process.pid
+
+        publish_cmap_event(
+          Monitoring::Event::Cmap::ConnectionCreated.new(address, id)
+        )
       end
 
       # @return [ Time ] The last time the connection was checked back into a pool.
@@ -167,12 +171,21 @@ module Mongo
       # @return [ true ] If the disconnect succeeded.
       #
       # @since 2.0.0
-      def disconnect!
+      def disconnect!(reason = nil)
         @auth_mechanism = nil
         @last_checkin = nil
         if socket
           socket.close
           @socket = nil
+
+          publish_cmap_event(
+            Monitoring::Event::Cmap::ConnectionClosed.new(
+              address,
+              connection.id,
+              #Monitoring::Event::Cmap::ConnectionClosed::POOL_CLOSED,
+              reason,
+            ),
+          )
         end
         true
       end
