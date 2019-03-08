@@ -74,10 +74,10 @@ module Mongo
           # Create the event.
           #
           # @example Create the event.
-          #   ConnectionClosed.new(reason, address, id)
+          #   ConnectionClosed.new(address, id, reason)
           #
           # @since 2.8.0
-          def initialize(reason, address, id)
+          def initialize(address, id, reason)
             @reason = reason
             @address = address
             @connection_id = id
