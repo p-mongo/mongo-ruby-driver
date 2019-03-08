@@ -52,8 +52,13 @@ module Mongo
       def initialize(options = {}, &block)
         @id = self.class.next_id
         @address = options[:address]
+        if Lint.enabled? && @address.nil?
+          raise Error::LintError, 'Connection pool created without an address'
+        end
         @monitoring = options[:monitoring]
-        byebug if @monitoring.nil?
+        if Lint.enabled? && @monitoring.nil?
+          raise Error::LintError, 'Connection pool created without a monitoring object'
+        end
         @options = options.dup.freeze
         @queue = queue = Queue.new(@options, &block)
         @closed = false
