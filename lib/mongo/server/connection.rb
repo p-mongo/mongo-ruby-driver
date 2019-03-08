@@ -150,6 +150,10 @@ module Mongo
             address.connect_socket!(socket)
             handshake!
             authenticate!
+
+            publish_cmap_event(
+              Monitoring::Event::Cmap::ConnectionReady.new(address, id)
+            )
           rescue Exception
             @socket = nil
             raise
