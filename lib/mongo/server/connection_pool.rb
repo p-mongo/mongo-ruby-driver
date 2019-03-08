@@ -21,14 +21,22 @@ module Mongo
     #
     # @since 2.0.0
     class ConnectionPool
+      include Id
       include Loggable
+      include Monitoring::Publishable
       extend Forwardable
+
+      # The default timeout, in seconds, to wait for a connection.
+      DEFAULT_WAIT_TIMEOUT = 1.freeze
 
       # Create the new connection pool.
       #
       # @param [ Server ] server The server which this connection pool is for.
       # @param [ Hash ] options The connection pool options.
       #
+      # @option options [ Address ] :address The address that this connection
+      #   pool is for.
+      # @option options [ Monitoring ] :monitoring The monitoring.
       # @option options [ Integer ] :max_pool_size The maximum pool size.
       # @option options [ Integer ] :min_pool_size The minimum pool size.
       # @option options [ Float ] :wait_queue_timeout The time to wait, in
@@ -53,10 +61,33 @@ module Mongo
           queue.disconnect!
         end
         ObjectSpace.define_finalizer(self, finalizer)
+
+        publish_cmap_event(
+          Monitoring::Event::Cmap::PoolCreated.new(address, options)
+        )
       end
+
+      # @return [ String ] address The address the pool's connections will connect to.
+      #
+      # @since 2.8.0
+      attr_reader :address
 
       # @return [ Hash ] options The pool options.
       attr_reader :options
+
+      # The time to wait, in seconds, for a connection to become available
+      # when a connection is being checked out and the pool is at its maximim
+      # size.
+      #
+      # @example Get the wait timeout.
+      #   queue.wait_timeout
+      #
+      # @return [ Float ] The wait timeout.
+      #
+      # @since 2.0.0
+      def wait_timeout
+        @wait_timeout ||= options[:wait_queue_timeout] || DEFAULT_WAIT_TIMEOUT
+      end
 
       def_delegators :queue, :close_stale_sockets!
 
@@ -82,7 +113,25 @@ module Mongo
       #
       # @since 2.0.0
       def checkout
-        queue.dequeue
+        publish_cmap_event(
+          Monitoring::Event::Cmap::ConnectionCheckoutStarted.new(address)
+        )
+
+        begin
+          queue.dequeue.tap do |connection|
+            publish_cmap_event(
+              Monitoring::Event::Cmap::ConnectionCheckedOut.new(address, connection.id),
+            )
+          end
+        rescue Timeout::Error
+          publish_cmap_event(
+            Monitoring::Event::Cmap::ConnectionCheckoutFailed.new(
+              address,
+              Monitoring::Event::Cmap::ConnectionCheckoutFailed::TIMEOUT,
+            ),
+          )
+          raise
+        end
       end
 
       # Closes all idle connections in the pool and schedules currently checked
@@ -98,6 +147,10 @@ module Mongo
       # @since 2.1.0
       def disconnect!
         queue.disconnect!
+
+        publish_cmap_event(
+          Monitoring::Event::Cmap::PoolCleared.new(address)
+        )
       end
 
       # Get a pretty printed string inspection for the pool.
