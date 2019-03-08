@@ -244,6 +244,27 @@ module Mongo
         end
         private :decrement_pool_size
 
+        def close_checked_out_connection(connection)
+          # If an event handler raises, prevent the queue from losing
+          # track of the connection (the queue thinking there is an
+          # outstanding connection but the connection never getting closed
+          # or returned to the queue)
+          begin
+            publish_cmap_event(
+              Monitoring::Event::Cmap::ConnectionCheckedIn.new(address, connection.id)
+            )
+          ensure
+            mutex.synchronize do
+              @pool_size -= 1
+            end
+          end
+
+          # If we are here, the checked in event subscribers did not raise
+          connection.disconnect!
+        ensure
+          check_count_invariants
+        end
+
         # Get a pretty printed string inspection for the queue.
         #
         # @example Inspect the queue.
