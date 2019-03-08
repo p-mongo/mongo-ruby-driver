@@ -23,37 +23,15 @@ module Mongo
 
       attr_reader :test_instance
 
-      # Compare the existing CMAP events data and the expected CMAP events.
-      #
-      # Uses RSpec matchers and raises expectation failures if there is a
-      # mismatch.
-      def verify_events(actual_events)
-        expected_events = test_instance.expected_events
-        if expected_events.nil?
-          expect(actual_events).to be nil
-        elsif expected_events.empty?
-          expect(actual_events).to be_empty
-        else
-          expect(actual_events.length).to eq(expected_events.length)
-
-          expected_events.each_index do |i|
-            verify_hashes(actual_events[i], expected_events[i])
-          end
-        end
-      end
-
-      private
-
       def verify_hashes(actual, expected)
-        expect(actual.length).to eq(expected.length)
-
-        actual.keys.each do |key|
-          expect(expected.key?(key)).to eq(true)
-
-          if expected[key] != 42
-            expect(actual[key]).to eq(actual[key])
+        actual_modified = actual.dup
+        actual_modified.each do |k, v|
+          if expected.key?(k) && expected[k] == 42
+            actual_modified[k] = 42
           end
         end
+
+        expect(actual_modified).to eq(expected)
       end
     end
   end

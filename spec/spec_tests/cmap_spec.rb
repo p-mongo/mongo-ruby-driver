@@ -31,8 +31,16 @@ describe 'Cmap' do
         expect(result['error']).to eq(spec.expected_error)
       end
 
-      it 'emits the correct events' do
-        #verifier.verify_events(result['events'])
+      let(:actual_events) { result['events'].freeze }
+
+      it 'emits the correct number of events' do
+        expect(actual_events.length).to eq(spec.expected_events.length)
+      end
+
+      spec.expected_events.each_with_index do |expected_event, index|
+        it "emits correct event #{index+1}" do
+          verifier.verify_hashes(actual_events[index], expected_event)
+        end
       end
     end
   end
