@@ -32,6 +32,7 @@ module Mongo
       #   Mongo::Error::ConnectionCheckoutTimeout.new(address)
       #
       # @since 2.8.0
+      # @api private
       def initialize(address)
         @address = address
 
