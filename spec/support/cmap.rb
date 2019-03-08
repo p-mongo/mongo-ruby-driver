@@ -68,9 +68,7 @@ module Mongo
             Mongo::Event::Listeners.new,
             pool_options.merge(monitoring_io: false))
 
-        @pool = Mongo::Server::ConnectionPool.get(server) do
-          Mongo::Server::Connection.new(server)
-        end
+        @pool = server.pool
 
         preprocess
       end
