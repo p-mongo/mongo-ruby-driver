@@ -77,6 +77,7 @@ module Mongo
           #   ConnectionClosed.new(address, id, reason)
           #
           # @since 2.8.0
+          # @api private
           def initialize(address, id, reason)
             @reason = reason
             @address = address

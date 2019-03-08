@@ -34,6 +34,7 @@ module Mongo
           #   ConnectionCheckoutStarted.new(address)
           #
           # @since 2.8.0
+          # @api private
           def initialize(address)
             @address = address
           end

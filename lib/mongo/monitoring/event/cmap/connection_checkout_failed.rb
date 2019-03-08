@@ -51,6 +51,7 @@ module Mongo
           #   ConnectionCheckoutFailed.new(address, reason)
           #
           # @since 2.8.0
+          # @api private
           def initialize(address, reason)
             @reason = reason
             @address = address

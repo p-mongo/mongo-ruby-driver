@@ -39,6 +39,7 @@ module Mongo
           #   PoolCreated.new(address, options)
           #
           # @since 2.8.0
+          # @api private
           def initialize(address, options)
             @address = address
             @options = options.dup.freeze
