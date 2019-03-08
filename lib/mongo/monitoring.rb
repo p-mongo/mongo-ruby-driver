@@ -223,6 +223,7 @@ module Mongo
           end
         end
         subscribe(COMMAND, CommandLogSubscriber.new(options))
+        subscribe(CONNECTION_POOL, CmapLogSubscriber.new(options))
         subscribe(SERVER_OPENING, ServerOpeningLogSubscriber.new(options))
         subscribe(SERVER_CLOSED, ServerClosedLogSubscriber.new(options))
         subscribe(SERVER_DESCRIPTION_CHANGED, ServerDescriptionChangedLogSubscriber.new(options))
@@ -293,6 +294,7 @@ end
 require 'mongo/monitoring/event'
 require 'mongo/monitoring/publishable'
 require 'mongo/monitoring/command_log_subscriber'
+require 'mongo/monitoring/cmap_log_subscriber'
 require 'mongo/monitoring/sdam_log_subscriber'
 require 'mongo/monitoring/server_description_changed_log_subscriber'
 require 'mongo/monitoring/server_closed_log_subscriber'
