@@ -5,6 +5,7 @@ describe Mongo::Server::ConnectionPool::Queue do
   def create_connection(generation=-1)
     double('connection').tap do |connection|
       allow(connection).to receive(:generation).and_return(generation)
+      allow(connection).to receive(:id).and_return(42)
       allow(connection).to receive(:disconnect!)
     end
   end
@@ -12,6 +13,8 @@ describe Mongo::Server::ConnectionPool::Queue do
   let(:connection) do
     create_connection
   end
+
+  let(:monitoring) { Mongo::Monitoring.new }
 
   describe '#dequeue' do
 
@@ -58,7 +61,10 @@ describe Mongo::Server::ConnectionPool::Queue do
   describe '#disconnect!' do
 
     def create_queue(min_pool_size)
-      described_class.new(max_pool_size: 3, min_pool_size: min_pool_size) do |generation|
+      described_class.new(
+        max_pool_size: 3, min_pool_size: min_pool_size,
+        monitoring: monitoring,
+      ) do |generation|
         create_connection(generation)
       end.tap do |queue|
         # make queue be of size 2 so that it has enqueued connections
@@ -124,7 +130,7 @@ describe Mongo::Server::ConnectionPool::Queue do
     let(:queue) do
       # max pool size set to 2 to allow enqueueing a connection
       # without lint violations
-      described_class.new(:max_pool_size => 2) { create_connection }
+      described_class.new(:max_pool_size => 2, monitoring: monitoring) { create_connection }
     end
 
     context 'connection of the same generation as queue' do
@@ -309,7 +315,10 @@ describe Mongo::Server::ConnectionPool::Queue do
     end
 
     let(:queue) do
-      described_class.new(max_pool_size: 2, max_idle_time: 0.5) do
+      described_class.new(
+        max_pool_size: 2, max_idle_time: 0.5,
+        monitoring: monitoring
+      ) do
         double('connection').tap do |con|
           expect(con).to receive(:generation).and_return(1)
           allow(con).to receive(:record_checkin!) do
@@ -328,8 +337,10 @@ describe Mongo::Server::ConnectionPool::Queue do
 
     it 'disconnects all expired and only expired connections' do
       c1 = queue.dequeue
+      allow(c1).to receive(:id).and_return(42)
       expect(c1).to receive(:disconnect!)
       c2 = queue.dequeue
+      allow(c2).to receive(:id).and_return(43)
       expect(c2).not_to receive(:disconnect!)
 
       queue.enqueue(c1)

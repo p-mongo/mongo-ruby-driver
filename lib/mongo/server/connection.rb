@@ -181,7 +181,7 @@ module Mongo
           publish_cmap_event(
             Monitoring::Event::Cmap::ConnectionClosed.new(
               address,
-              connection.id,
+              id,
               #Monitoring::Event::Cmap::ConnectionClosed::POOL_CLOSED,
               reason,
             ),
