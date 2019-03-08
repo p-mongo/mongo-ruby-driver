@@ -109,7 +109,7 @@ module Mongo
       #
       # @since 2.0.0
       def checkin(connection)
-        raise_if_closed!
+        # The pool may be closed here.
 
         queue.enqueue(connection)
       end
