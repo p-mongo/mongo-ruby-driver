@@ -97,7 +97,7 @@ module Mongo
                         'address' => event.address,
                         'options' => normalize_options(event.options),
                       }
-                    when Mongo::Monitoring::Event::Cmap::PoolClosed
+                    when Mongo::Monitoring::Event::Cmap::PoolClosedError
                       {
                         'type' => 'ConnectionPoolClosed',
                         'address' => event.address,
