@@ -86,7 +86,7 @@ module Mongo
       #
       # @since 2.0.0
       def wait_timeout
-        @wait_timeout ||= options[:wait_queue_timeout] || WAIT_TIMEOUT
+        @wait_timeout ||= options[:wait_queue_timeout] || DEFAULT_WAIT_TIMEOUT
       end
 
       def_delegators :queue, :close_stale_sockets!
