@@ -139,18 +139,41 @@ module Mongo
       # The pool remains operational and can create new connections when
       # requested.
       #
-      # @example Disconnect the connection pool.
-      #   pool.disconnect!
-      #
       # @return [ true ] true.
       #
-      # @since 2.1.0
-      def disconnect!
+      # @since 2.8.0
+      def clear
         queue.disconnect!
 
         publish_cmap_event(
           Monitoring::Event::Cmap::PoolCleared.new(address)
         )
+
+        true
+      end
+
+      # @since 2.1.0
+      # @deprecated
+      alias :disconnect! :clear
+
+      # Marks the pool closed, closes all idle connections in the pool and
+      # schedules currently checked out connections to be closed when they are
+      # checked back into the pool. Attempts to use the pool after it is closed
+      # will raise Error::PoolClosedError.
+      #
+      # @return [ true ] true.
+      #
+      # @since 2.8.0
+      def close
+        #return if closed?
+
+        queue.disconnect!
+
+        publish_cmap_event(
+          Monitoring::Event::Cmap::PoolClosed.new(address)
+        )
+
+        true
       end
 
       # Get a pretty printed string inspection for the pool.

@@ -336,13 +336,11 @@ module Mongo
       end
 
       def run_clear_op(state)
-        #pool.clear
-        pool.disconnect!
+        pool.clear
       end
 
       def run_close_op(state)
-        #pool.close!
-        pool.disconnect!
+        pool.close
       end
     end
   end

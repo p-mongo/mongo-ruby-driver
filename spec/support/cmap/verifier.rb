@@ -24,6 +24,9 @@ module Mongo
       attr_reader :test_instance
 
       def verify_hashes(actual, expected)
+        expect(expected).to be_a(Hash)
+        expect(actual).to be_a(Hash)
+
         actual_modified = actual.dup
         actual_modified.each do |k, v|
           if expected.key?(k) && expected[k] == 42
