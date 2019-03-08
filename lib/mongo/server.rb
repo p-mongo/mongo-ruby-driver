@@ -311,7 +311,7 @@ module Mongo
     #
     # @since 2.1.0
     def reconnect!
-      monitor.restart!
+      monitor.restart! unless options[:monitoring_io] == false
       @connected = true
     end
 
