@@ -48,10 +48,10 @@ module Mongo
           # Create the event.
           #
           # @example Create the event.
-          #   ConnectionCheckoutFailed.new(reason, address)
+          #   ConnectionCheckoutFailed.new(address, reason)
           #
           # @since 2.8.0
-          def initialize(reason, address)
+          def initialize(address, reason)
             @reason = reason
             @address = address
           end
