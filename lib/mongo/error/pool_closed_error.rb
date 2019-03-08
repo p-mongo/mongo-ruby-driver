@@ -32,6 +32,7 @@ module Mongo
       #   Mongo::Error::PoolClosedError.new(address)
       #
       # @since 2.8.0
+      # @api private
       def initialize(address)
         @address = address
 
