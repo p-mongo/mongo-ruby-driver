@@ -40,6 +40,10 @@ module Mongo
           raise ArgumentError, 'First argument must be a Server instance'
         end
         @server = server
+        @monitoring = server.monitoring
+        if Lint.enabled? && @monitoring.nil?
+          raise Error::LintError, 'Connection pool created without a monitoring object'
+        end
         @options = options.dup.freeze
         @queue = queue = Queue.new(@options) do |generation|
           Connection.new(server, options.merge(generation: generation))
