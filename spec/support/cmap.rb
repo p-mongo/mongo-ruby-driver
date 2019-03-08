@@ -97,7 +97,7 @@ module Mongo
                         'address' => event.address,
                         'options' => normalize_options(event.options),
                       }
-                    when Mongo::Monitoring::Event::Cmap::PoolClosedError
+                    when Mongo::Monitoring::Event::Cmap::PoolClosed
                       {
                         'type' => 'ConnectionPoolClosed',
                         'address' => event.address,
@@ -283,7 +283,7 @@ module Mongo
 
       # We hard-code the error messages because ours contain information like the address and the
       # connection ID.
-      rescue Error::PoolClosed
+      rescue Error::PoolClosedError
         raise unless main_thread
 
         {
