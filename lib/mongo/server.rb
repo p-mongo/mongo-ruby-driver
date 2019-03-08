@@ -286,7 +286,8 @@ module Mongo
     def pool
       @pool_lock.synchronize do
         @pool ||= begin
-          ConnectionPool.new(options) do |generation|
+          cp_options = options.merge(address: address, monitoring: monitoring)
+          ConnectionPool.new(cp_options) do |generation|
             Connection.new(self, options.merge(generation: generation))
           end
         end

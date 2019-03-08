@@ -53,6 +53,7 @@ module Mongo
         @id = self.class.next_id
         @address = options[:address]
         @monitoring = options[:monitoring]
+        byebug if @monitoring.nil?
         @options = options.dup.freeze
         @queue = queue = Queue.new(@options, &block)
 

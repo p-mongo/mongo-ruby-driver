@@ -35,6 +35,7 @@ module Mongo
       # @since 2.0.0
       class Queue
         include Loggable
+        include Monitoring::Publishable
         extend Forwardable
 
         # The default max size for the connection pool.
@@ -79,8 +80,15 @@ module Mongo
           @queue = Array.new(min_size) { create_connection }
           @mutex = Mutex.new
           @resource = ConditionVariable.new
+          @address = options[:address]
+          @monitoring = options[:monitoring]
           check_count_invariants
         end
+
+        # @return [ String ] address The address the pool's connections will connect to.
+        #
+        # @since 2.8.0
+        attr_reader :address
 
         # @return [ Integer ] generation Generation of connections currently
         #   being used by the queue.
