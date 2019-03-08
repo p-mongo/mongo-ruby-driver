@@ -42,7 +42,7 @@ module Mongo
         MAX_SIZE = 5.freeze
 
         # The default min size for the connection pool.
-        MIN_SIZE = 1.freeze
+        MIN_SIZE = 0.freeze
 
         # The default timeout, in seconds, to wait for a connection.
         WAIT_TIMEOUT = 1.freeze
