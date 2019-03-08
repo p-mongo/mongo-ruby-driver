@@ -17,7 +17,7 @@ describe Mongo::Monitoring::Event::Cmap::ConnectionClosed do
     end
 
     let(:event) do
-      described_class.new(reason, address, id)
+      described_class.new(address, id, reason)
     end
 
     it 'renders correctly' do

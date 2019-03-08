@@ -13,7 +13,7 @@ describe Mongo::Monitoring::Event::Cmap::ConnectionCheckoutFailed do
     end
 
     let(:event) do
-      described_class.new(reason, address)
+      described_class.new(address, reason)
     end
 
     it 'renders correctly' do
