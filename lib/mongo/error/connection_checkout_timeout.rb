@@ -29,7 +29,7 @@ module Mongo
       # Instantiate the new exception.
       #
       # @example Instantiate the exception.
-      #   Mongo::Error::ConnectionCheckoutTimeout.new(address, pool_size)
+      #   Mongo::Error::ConnectionCheckoutTimeout.new(address)
       #
       # @since 2.8.0
       def initialize(address)
