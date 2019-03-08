@@ -39,6 +39,7 @@ module Mongo
           #   ConnectionCheckedOut.new(address, id)
           #
           # @since 2.8.0
+          # @api private
           def initialize(address, id)
             @address = address
             @connection_id = id
