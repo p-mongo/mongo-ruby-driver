@@ -18,7 +18,7 @@ module Mongo
     # Exception raised if an operation is attempted on a closed connection pool.
     #
     # @since 2.8.0
-    class PoolClosed < Error
+    class PoolClosedError < Error
 
       # @return [ Mongo::Address ] address The address of the server the pool's connections connect
       #   to.
@@ -29,7 +29,7 @@ module Mongo
       # Instantiate the new exception.
       #
       # @example Instantiate the exception.
-      #   Mongo::Error::PoolClosed.new(address)
+      #   Mongo::Error::PoolClosedError.new(address)
       #
       # @since 2.8.0
       def initialize(address)
