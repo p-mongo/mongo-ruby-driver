@@ -56,6 +56,7 @@ module Mongo
         byebug if @monitoring.nil?
         @options = options.dup.freeze
         @queue = queue = Queue.new(@options, &block)
+        @closed = false
 
         finalizer = proc do
           queue.disconnect!
@@ -87,6 +88,15 @@ module Mongo
       # @since 2.0.0
       def wait_timeout
         @wait_timeout ||= options[:wait_queue_timeout] || DEFAULT_WAIT_TIMEOUT
+      end
+
+      # Whether the pool has been closed.
+      #
+      # @return [ true | false ] Whether the pool is closed.
+      #
+      # @since 2.8.0
+      def closed?
+        @closed
       end
 
       def_delegators :queue, :close_stale_sockets!
@@ -165,7 +175,7 @@ module Mongo
       #
       # @since 2.8.0
       def close
-        #return if closed?
+        return if closed?
 
         queue.disconnect!
 
