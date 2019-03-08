@@ -148,6 +148,10 @@ module Mongo
           # When @socket is assigned, the socket should have handshaken and
           # authenticated and be usable.
           @socket = socket
+
+          publish_cmap_event(
+            Monitoring::Event::Cmap::ConnectionReady.new(address, id)
+          )
         end
         true
       end
