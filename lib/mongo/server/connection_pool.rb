@@ -109,6 +109,8 @@ module Mongo
       #
       # @since 2.0.0
       def checkin(connection)
+        raise_if_closed!
+
         queue.enqueue(connection)
       end
 
@@ -123,6 +125,8 @@ module Mongo
       #
       # @since 2.0.0
       def checkout
+        raise_if_closed!
+
         publish_cmap_event(
           Monitoring::Event::Cmap::ConnectionCheckoutStarted.new(address)
         )
@@ -153,6 +157,8 @@ module Mongo
       #
       # @since 2.8.0
       def clear
+        raise_if_closed!
+
         queue.disconnect!
 
         publish_cmap_event(
@@ -209,6 +215,8 @@ module Mongo
       #
       # @since 2.0.0
       def with_connection
+        raise_if_closed!
+
         connection = checkout
         yield(connection)
       ensure
@@ -218,6 +226,17 @@ module Mongo
       protected
 
       attr_reader :queue
+
+      private
+
+      # Asserts that the pool has not been closed.
+      #
+      # @raise [ Error::PoolClosed ] If the pool has been closed.
+      #
+      # @since 2.8.0
+      def raise_if_closed!
+        raise Error::PoolClosed.new(address, @pool_size) if closed?
+      end
     end
   end
 end
