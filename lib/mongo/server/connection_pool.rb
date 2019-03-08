@@ -116,7 +116,11 @@ module Mongo
       def checkin(connection)
         # The pool may be closed here.
 
-        queue.enqueue(connection)
+        if closed?
+          queue.close_checked_out_connection(connection)
+        else
+          queue.enqueue(connection)
+        end
       end
 
       # Check a connection out from the pool. If a connection exists on the same
@@ -138,6 +142,9 @@ module Mongo
 
         begin
           queue.dequeue.tap do |connection|
+            # If connection fails, we are in trouble.
+            connection.connect!
+
             publish_cmap_event(
               Monitoring::Event::Cmap::ConnectionCheckedOut.new(address, connection.id),
             )
