@@ -189,7 +189,7 @@ module Mongo
           Monitoring::Event::Cmap::PoolClosed.new(address)
         )
 
-        true
+        @closed = true
       end
 
       # Get a pretty printed string inspection for the pool.
@@ -235,7 +235,9 @@ module Mongo
       #
       # @since 2.8.0
       def raise_if_closed!
-        raise Error::PoolClosed.new(address, @pool_size) if closed?
+        if closed?
+          raise Error::PoolClosedError.new(address)
+        end
       end
     end
   end
