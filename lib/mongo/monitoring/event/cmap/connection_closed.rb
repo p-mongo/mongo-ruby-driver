@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2019  MongoDB, Inc.
+# Copyright (C) 2019 MongoDB, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ module Mongo
           #   connection handshake failing.
           #
           # @since 2.8.0
-          HANDSHAKE_FAILED = :handshakeFailed
+          HANDSHAKE_FAILED = :handshake_failed
 
           # @return [ Symbol ] UNKNOWN Indicates that the connection was closed for an unknown reason.
           #
