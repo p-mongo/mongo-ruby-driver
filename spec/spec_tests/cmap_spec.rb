@@ -20,6 +20,9 @@ describe 'Cmap' do
       end
 
       let!(:result) do
+        mock_socket = double('socket')
+        allow(mock_socket).to receive(:close)
+        allow_any_instance_of(Mongo::Server::Connection).to receive(:do_connect).and_return(mock_socket)
         spec.run
       end
 
