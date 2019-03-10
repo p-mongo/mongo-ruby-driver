@@ -66,6 +66,7 @@ module Mongo
         publish_cmap_event(
           Monitoring::Event::Cmap::PoolCreated.new(address, options)
         )
+        @queue.populate_up_to_min_size
       end
 
       # @return [ String ] address The address the pool's connections will connect to.

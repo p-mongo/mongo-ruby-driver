@@ -131,6 +131,13 @@ module Mongo
         # @since 2.7.0
         attr_reader :pool_size
 
+        # @api private
+        def populate_up_to_min_size
+          while size < min_size
+            @queue << create_connection
+          end
+        end
+
         # Retrieves a connection. If there are active connections in the
         # queue, the most recently used connection is returned. Otherwise
         # if the connection pool size is less than the max size, creates a
