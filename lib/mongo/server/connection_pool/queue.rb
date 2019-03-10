@@ -348,7 +348,7 @@ module Mongo
               connection = queue[i]
               if last_checkin = connection.last_checkin
                 if (Time.now - last_checkin) > max_idle_time
-                  connection.disconnect!
+                  connection.disconnect!(:idle)
                   queue.delete_at(i)
                   @pool_size -= 1
                   next
@@ -372,6 +372,9 @@ module Mongo
                 lc = connection.last_checkin
                 if max_idle_time && lc && Time.now - lc > max_idle_time
                   connection.disconnect!(:idle)
+                  @pool_size -= 1
+                elsif connection.generation < generation
+                  connection.disconnect!(:stale)
                   @pool_size -= 1
                 else
                   return connection

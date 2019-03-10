@@ -163,10 +163,10 @@ module Mongo
       # @return [ true ] true.
       #
       # @since 2.8.0
-      def clear
+      def clear(reason = :stale)
         raise_if_closed!
 
-        queue.disconnect!(:stale)
+        queue.disconnect!(reason)
 
         publish_cmap_event(
           Monitoring::Event::Cmap::PoolCleared.new(address)

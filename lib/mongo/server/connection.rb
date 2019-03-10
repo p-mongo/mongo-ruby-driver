@@ -354,7 +354,7 @@ module Mongo
         # Important: timeout errors are not handled here
         rescue Error::SocketError
           @server.unknown!
-          @server.pool.disconnect!
+          @server.pool.disconnect!(:other_error)
           raise
         end
       end
