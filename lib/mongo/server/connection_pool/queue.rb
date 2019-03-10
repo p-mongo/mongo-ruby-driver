@@ -162,11 +162,11 @@ module Mongo
         # @return [ true ] Always true.
         #
         # @since 2.1.0
-        def disconnect!
+        def disconnect!(reason = nil)
           check_count_invariants
           mutex.synchronize do
             while connection = queue.pop
-              connection.disconnect!
+              connection.disconnect!(reason)
               @pool_size -= 1
               if @pool_size < 0
                 # This should never happen
@@ -223,7 +223,11 @@ module Mongo
 
               resource.broadcast
             else
-              connection.disconnect!
+              publish_cmap_event(
+                Monitoring::Event::Cmap::ConnectionCheckedIn.new(address, connection.id)
+              )
+
+              connection.disconnect!(:stale)
 
               decrement_pool_size
             end
@@ -244,7 +248,7 @@ module Mongo
         end
         private :decrement_pool_size
 
-        def close_checked_out_connection(connection)
+        def close_checked_out_connection(connection, reason)
           # If an event handler raises, prevent the queue from losing
           # track of the connection (the queue thinking there is an
           # outstanding connection but the connection never getting closed
@@ -260,7 +264,7 @@ module Mongo
           end
 
           # If we are here, the checked in event subscribers did not raise
-          connection.disconnect!
+          connection.disconnect!(reason)
         ensure
           check_count_invariants
         end
@@ -363,7 +367,16 @@ module Mongo
           mutex.synchronize do
             deadline = Time.now + wait_timeout
             loop do
-              return queue.shift unless queue.empty?
+              unless queue.empty?
+                connection = queue.shift
+                lc = connection.last_checkin
+                if max_idle_time && lc && Time.now - lc > max_idle_time
+                  connection.disconnect!(:idle)
+                  @pool_size -= 1
+                else
+                  return connection
+                end
+              end
               connection = create_connection
               return connection if connection
               wait_for_next!(deadline)

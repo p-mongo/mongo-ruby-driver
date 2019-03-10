@@ -59,7 +59,7 @@ module Mongo
         @closed = false
 
         finalizer = proc do
-          queue.disconnect!
+          queue.disconnect!(:pool_closed)
         end
         ObjectSpace.define_finalizer(self, finalizer)
 
@@ -112,7 +112,7 @@ module Mongo
         # The pool may be closed here.
 
         if closed?
-          queue.close_checked_out_connection(connection)
+          queue.close_checked_out_connection(connection, :pool_closed)
         else
           queue.enqueue(connection)
         end
@@ -166,7 +166,7 @@ module Mongo
       def clear
         raise_if_closed!
 
-        queue.disconnect!
+        queue.disconnect!(:stale)
 
         publish_cmap_event(
           Monitoring::Event::Cmap::PoolCleared.new(address)
@@ -190,7 +190,7 @@ module Mongo
       def close
         return if closed?
 
-        queue.disconnect!
+        queue.disconnect!(:pool_closed)
 
         publish_cmap_event(
           Monitoring::Event::Cmap::PoolClosed.new(address)
