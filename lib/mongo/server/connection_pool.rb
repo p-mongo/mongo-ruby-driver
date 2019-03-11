@@ -116,6 +116,10 @@ module Mongo
           # and that should close them.
         end
         ObjectSpace.define_finalizer(self, finalizer)
+
+        publish_cmap_event(
+          Monitoring::Event::Cmap::PoolCreated.new(@server.address, options)
+        )
       end
 
       # @return [ Hash ] options The pool options.
@@ -231,7 +235,12 @@ module Mongo
       def check_out
         raise_if_closed!
 
+        publish_cmap_event(
+          Monitoring::Event::Cmap::ConnectionCheckoutStarted.new(@server.address)
+        )
+
         deadline = Time.now + wait_timeout
+        connection = nil
         loop do
           # Lock must be taken on each iteration, rather for the method
           # overall, otherwise other threads will not be able to check in
@@ -239,8 +248,7 @@ module Mongo
           @lock.synchronize do
             unless @available_connections.empty?
               connection = @available_connections.pop
-              @checked_out_connections << connection
-              return connection
+              break
             end
 
             # Ruby does not allow a thread
@@ -248,17 +256,27 @@ module Mongo
               # This performs i/o under our lock, which is bad.
               # Fix in the future.
               connection = create_connection
-              @checked_out_connections << connection
-              return connection
+              break
             end
           end
 
           wait = deadline - Time.now
           if wait <= 0
+            publish_cmap_event(
+              Monitoring::Event::Cmap::ConnectionCheckoutFailed.new(
+                @server.address,
+                Monitoring::Event::Cmap::ConnectionCheckoutFailed::TIMEOUT,
+              ),
+            )
             raise Error::ConnectionCheckoutTimeout(@server.address, wait_timeout)
           end
           @available_semaphore.wait(wait)
         end
+
+        @checked_out_connections << connection
+        publish_cmap_event(
+          Monitoring::Event::Cmap::ConnectionCheckedOut.new(@server.address, connection.id),
+        )
       end
 
       # Check a connection back into the pool.
@@ -289,6 +307,16 @@ module Mongo
           else
             connection.record_checkin!
             @available_connections << connection
+
+            # Note: if an event handler raises, resource will not be signaled.
+            # This means threads waiting for a connection to free up when
+            # the pool is at max size may time out.
+            # Threads that begin waiting after this method completes (with
+            # the exception) should be fine.
+            publish_cmap_event(
+              Monitoring::Event::Cmap::ConnectionCheckedIn.new(address, connection.id)
+            )
+
             # Wake up only one thread waiting for an available connection,
             # since only one connection was checked in.
             @available_semaphore.signal
@@ -314,6 +342,11 @@ module Mongo
           end
           @generation += 1
         end
+
+        publish_cmap_event(
+          Monitoring::Event::Cmap::PoolCleared.new(@server.address)
+        )
+
         true
       end
 
