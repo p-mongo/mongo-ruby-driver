@@ -294,6 +294,15 @@ module Mongo
 
           @checked_out_connections.delete(connection)
 
+          # Note: if an event handler raises, resource will not be signaled.
+          # This means threads waiting for a connection to free up when
+          # the pool is at max size may time out.
+          # Threads that begin waiting after this method completes (with
+          # the exception) should be fine.
+          publish_cmap_event(
+            Monitoring::Event::Cmap::ConnectionCheckedIn.new(@server.address, connection.id)
+          )
+
           if closed?
             connection.disconnect!
             return
@@ -307,15 +316,6 @@ module Mongo
           else
             connection.record_checkin!
             @available_connections << connection
-
-            # Note: if an event handler raises, resource will not be signaled.
-            # This means threads waiting for a connection to free up when
-            # the pool is at max size may time out.
-            # Threads that begin waiting after this method completes (with
-            # the exception) should be fine.
-            publish_cmap_event(
-              Monitoring::Event::Cmap::ConnectionCheckedIn.new(address, connection.id)
-            )
 
             # Wake up only one thread waiting for an available connection,
             # since only one connection was checked in.
@@ -371,6 +371,10 @@ module Mongo
             connection.disconnect!
           end
         end
+
+        publish_cmap_event(
+          Monitoring::Event::Cmap::PoolClosed.new(@server.address)
+        )
 
         @closed = true
       end
