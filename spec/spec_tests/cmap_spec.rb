@@ -34,6 +34,8 @@ describe 'Cmap' do
       let(:actual_events) { result['events'].freeze }
 
       it 'emits the correct number of events' do
+      p [:actual,actual_events]
+      p [:expect,spec.expected_events]
         expect(actual_events.length).to eq(spec.expected_events.length)
       end
 
