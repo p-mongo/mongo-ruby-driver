@@ -7,7 +7,7 @@ describe 'Server Discovery and Monitoring' do
 
     spec = Mongo::SDAM::Spec.new(file)
 
-    context("#{spec.description} (#{file.sub(%r'.*/data/sdam/', '')})") do
+    context("#{spec.description} (#{file.sub(%r'.*/data/sdam/', '')})", paraspec: {group: true}) do
       before(:all) do
         class Mongo::Server::Monitor
           alias_method :run_saved!, :run!
