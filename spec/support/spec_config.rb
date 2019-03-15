@@ -1,9 +1,19 @@
 require 'singleton'
+require 'json'
 
 class SpecConfig
   include Singleton
 
   def initialize
+    if pc = ENV['PARALLEL_CONFIGS']
+      our_index = ENV['TEST_ENV_NUMBER'] || '1'
+      our_config = JSON.parse(pc)[our_index]
+
+      our_config.each do |k, v|
+        ENV[k] = v
+      end
+    end
+
     if ENV['MONGODB_URI']
       @mongodb_uri = Mongo::URI.new(ENV['MONGODB_URI'])
       @uri_options = Mongo::Options::Mapper.transform_keys_to_symbols(@mongodb_uri.uri_options)
