@@ -45,18 +45,17 @@ describe 'Step down behavior' do
 
     it 'continues through step down' do
 
+      subscribed_client.cluster.next_primary.pool.clear
       EventSubscriber.clear_events!
 
       # get the first item
       item = enum.next
       expect(item['test']).to eq(1)
 
-      find_events = EventSubscriber.started_events.select do |event|
-        event.command['find']
+      connection_created_events = EventSubscriber.succeeded_events.select do |event|
+        event.is_a?(Mongo::Monitoring::Event::Cmap::ConnectionCreated)
       end
-      expect(find_events.length).to eq(1)
-      find_socket_object_id = find_events.first.socket_object_id
-      expect(find_socket_object_id).to be_a(Numeric)
+      expect(connection_created_events).not_to be_empty
 
       current_primary = subscribed_client.cluster.next_primary
       ClusterTools.instance.change_primary
@@ -79,12 +78,10 @@ describe 'Step down behavior' do
       expect(get_more_events.length).to eq(1)
 
       # getMore should have been sent on the same connection as find
-      connection_created_events = EventSubscriber.started_events.select do |event|
-      byebug
-        event
+      connection_created_events = EventSubscriber.succeeded_events.select do |event|
+        event.is_a?(Mongo::Monitoring::Event::Cmap::ConnectionCreated)
       end
-      get_more_socket_object_id = get_more_events.first.socket_object_id
-      expect(get_more_socket_object_id).to eq(find_socket_object_id)
+      expect(connection_created_events).to be_empty
     end
   end
 
