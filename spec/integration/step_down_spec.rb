@@ -30,6 +30,7 @@ describe 'Step down behavior' do
     let(:subscribed_client) do
       test_client.tap do |client|
         client.subscribe(Mongo::Monitoring::COMMAND, EventSubscriber)
+        client.subscribe(Mongo::Monitoring::CONNECTION_POOL, EventSubscriber)
       end
     end
 
@@ -78,6 +79,10 @@ describe 'Step down behavior' do
       expect(get_more_events.length).to eq(1)
 
       # getMore should have been sent on the same connection as find
+      connection_created_events = EventSubscriber.started_events.select do |event|
+      byebug
+        event
+      end
       get_more_socket_object_id = get_more_events.first.socket_object_id
       expect(get_more_socket_object_id).to eq(find_socket_object_id)
     end
