@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe 'Transactions API' do
 
-  TRANSACTIONS_API_TESTS.sort.each do |file|
+  TRANSACTIONS_API_TESTS.each do |file|
 
     spec = Mongo::Transactions::Spec.new(file)
 
