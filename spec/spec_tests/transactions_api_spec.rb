@@ -39,7 +39,7 @@ describe 'Transactions API' do
 
             let(:verifier) { Mongo::CRUD::Verifier.new(test) }
 
-            it 'returns the correct result' do
+            it 'returns the correct results' do
               verifier.verify_operation_result(test_instance.expected_results, results[:results])
             end
 
