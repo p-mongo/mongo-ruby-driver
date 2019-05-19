@@ -62,6 +62,11 @@ module Mongo
         if test['outcome']
           @outcome = Mongo::CRUD::Outcome.new(test['outcome'])
         end
+
+        @ops = @operations.map do |op|
+          Operation.new(op, @session0, @session1)
+        end
+
         @expected_results = @operations.map do |o|
           result = o['result']
           next result unless result.class == Hash
@@ -171,10 +176,6 @@ module Mongo
 
         @session0 = test_client.start_session(@session_options[:session0] || {})
         @session1 = test_client.start_session(@session_options[:session1] || {})
-
-        @ops = @operations.map do |op|
-          Operation.new(op, @session0, @session1)
-        end
       end
 
       def teardown_test
