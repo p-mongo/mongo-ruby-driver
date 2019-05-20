@@ -95,7 +95,7 @@ module Mongo
       # @return [ Result ] The result of executing the operation.
       #
       # @since 2.6.0
-      def execute(collection, session0, session1, transaction_session=nil)
+      def execute(collection, session0, session1, active_session=nil)
         # Determine which object the operation method should be called on.
         obj = case object
         when 'session0'
@@ -120,8 +120,8 @@ module Mongo
                       @spec['arguments'].merge('session' => session1)
                     else
                       args = @spec['arguments'] || {}
-                      if transaction_session
-                        args = args.merge('session' => transaction_session)
+                      if active_session
+                        args = args.merge('session' => active_session)
                       end
                       args
                     end
