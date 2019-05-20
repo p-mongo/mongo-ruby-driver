@@ -216,7 +216,7 @@ module Mongo
       end
 
       def aggregate(collection, context)
-        collection.aggregate(pipeline, context.transform_arguments(options)).to_a
+        collection.aggregate(arguments['pipeline'], context.transform_arguments(options)).to_a
       end
 
       def bulk_write(collection, context)
@@ -233,25 +233,25 @@ module Mongo
       end
 
       def count(collection, context)
-        collection.count(filter, context.transform_arguments(options)).to_s
+        collection.count(arguments['filter'], context.transform_arguments(options)).to_s
       end
 
       def count_documents(collection, context)
-        collection.count_documents(filter, context.transform_arguments(options))
+        collection.count_documents(arguments['filter'], context.transform_arguments(options))
       end
 
       def delete_many(collection, context)
-        result = collection.delete_many(filter, context.transform_arguments(options))
+        result = collection.delete_many(arguments['filter'], context.transform_arguments(options))
         { 'deletedCount' => result.deleted_count }
       end
 
       def delete_one(collection, context)
-        result = collection.delete_one(filter, context.transform_arguments(options))
+        result = collection.delete_one(arguments['filter'], context.transform_arguments(options))
         { 'deletedCount' => result.deleted_count }
       end
 
       def distinct(collection, context)
-        collection.distinct(field_name, filter, context.transform_arguments(options))
+        collection.distinct(field_name, arguments['filter'], context.transform_arguments(options))
       end
 
       def find(collection, context)
@@ -259,7 +259,7 @@ module Mongo
         if arguments['modifiers']
           opts = opts.merge(modifiers: BSON::Document.new(arguments['modifiers']))
         end
-        collection.find(filter, opts).to_a
+        collection.find(arguments['filter'], opts).to_a
       end
 
       def insert_many(collection, context)
@@ -282,30 +282,30 @@ module Mongo
       end
 
       def replace_one(collection, context)
-        result = collection.replace_one(filter, arguments['replacement'], context.transform_arguments(options))
+        result = collection.replace_one(arguments['filter'], arguments['replacement'], context.transform_arguments(options))
         update_return_doc(result)
       end
 
       def update_many(collection, context)
-        result = collection.update_many(filter, arguments['update'], context.transform_arguments(options))
+        result = collection.update_many(arguments['filter'], arguments['update'], context.transform_arguments(options))
         update_return_doc(result)
       end
 
       def update_one(collection, context)
-        result = collection.update_one(filter, arguments['update'], context.transform_arguments(options))
+        result = collection.update_one(arguments['filter'], arguments['update'], context.transform_arguments(options))
         update_return_doc(result)
       end
 
       def find_one_and_delete(collection, context)
-        collection.find_one_and_delete(filter, context.transform_arguments(options))
+        collection.find_one_and_delete(arguments['filter'], context.transform_arguments(options))
       end
 
       def find_one_and_replace(collection, context)
-        collection.find_one_and_replace(filter, arguments['replacement'], context.transform_arguments(options))
+        collection.find_one_and_replace(arguments['filter'], arguments['replacement'], context.transform_arguments(options))
       end
 
       def find_one_and_update(collection, context)
-        collection.find_one_and_update(filter, arguments['update'], context.transform_arguments(options))
+        collection.find_one_and_update(arguments['filter'], arguments['update'], context.transform_arguments(options))
       end
 
       def object
@@ -342,14 +342,6 @@ module Mongo
 
       def field_name
         arguments['fieldName']
-      end
-
-      def filter
-        arguments['filter']
-      end
-
-      def pipeline
-        arguments['pipeline']
       end
 
       def array_filters
