@@ -205,7 +205,7 @@ module Mongo
 
       def run_command(database, context)
         # Convert the first key (i.e. the command name) to a symbol.
-        cmd = command.dup
+        cmd = arguments['command'].dup
         command_name = cmd.first.first
         command_value = cmd.delete(command_name)
         cmd = { command_name.to_sym => command_value }.merge(cmd)
@@ -282,7 +282,7 @@ module Mongo
       end
 
       def replace_one(collection, context)
-        result = collection.replace_one(filter, replacement, context.transform_arguments(options))
+        result = collection.replace_one(filter, arguments['replacement'], context.transform_arguments(options))
         update_return_doc(result)
       end
 
@@ -301,7 +301,7 @@ module Mongo
       end
 
       def find_one_and_replace(collection, context)
-        collection.find_one_and_replace(filter, replacement, context.transform_arguments(options))
+        collection.find_one_and_replace(filter, arguments['replacement'], context.transform_arguments(options))
       end
 
       def find_one_and_update(collection, context)
@@ -314,28 +314,12 @@ module Mongo
 
       def options
         ARGUMENT_MAP.reduce({}) do |opts, (key, value)|
-          arguments.key?(value) ? opts.merge!(key => send(key)) : opts
+          if arguments.key?(value) && respond_to?(key, true)
+            opts.merge!(key => send(key))
+          else
+            opts
+          end
         end
-      end
-
-      def collation
-        arguments['collation']
-      end
-
-      def command
-        arguments['command']
-      end
-
-      def replacement
-        arguments['replacement']
-      end
-
-      def sort
-        arguments['sort']
-      end
-
-      def projection
-        arguments['projection']
       end
 
       def documents
