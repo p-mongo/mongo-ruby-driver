@@ -65,7 +65,7 @@ module Mongo
           collection
         end
 
-        session = case @spec['arguments'] && @spec['arguments']['session']
+        session = case @arguments && @arguments['session']
         when 'session0'
           session0
         when 'session1'
@@ -137,12 +137,12 @@ module Mongo
       end
 
       def with_transaction(session, context, collection)
-        unless callback = @spec['arguments']['callback']
+        unless callback = @arguments['callback']
           raise ArgumentError, 'with_transaction requires a callback to be present'
         end
 
-        if @spec['arguments']['options']
-          options = Utils.snakeize_hash(@spec['arguments']['options'])
+        if @arguments['options']
+          options = Utils.snakeize_hash(@arguments['options'])
         else
           options = nil
         end
@@ -324,10 +324,6 @@ module Mongo
 
       def write_concern
         Utils.snakeize_hash(@spec['collectionOptions'] && @spec['collectionOptions']['writeConcern'])
-      end
-
-      def spec_arguments
-        @spec['arguments']
       end
 
       def transform_read_preference(v)
