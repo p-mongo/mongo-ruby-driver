@@ -124,7 +124,7 @@ module Mongo
         end
 
         results = @ops.map do |op|
-          op.execute(@collection)
+          op.execute(@collection, @session0, @session1)
         end
 
         session0_id = @session0.session_id
@@ -173,7 +173,7 @@ module Mongo
         @session1 = test_client.start_session(@session_options[:session1] || {})
 
         @ops = @operations.map do |op|
-          Operation.new(op, @session0, @session1)
+          Operation.new(op)
         end
       end
 

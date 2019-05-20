@@ -77,23 +77,9 @@ module Mongo
       # @return [ Hash ] spec The operation spec.
       #
       # @since 2.6.0
-      def initialize(spec, session0, session1, transaction_session=nil)
+      def initialize(spec)
         @spec = spec
         @name = spec['name']
-        @session0 = session0
-        @session1 = session1
-        @arguments = case spec['arguments'] && spec['arguments']['session']
-                    when 'session0'
-                      spec['arguments'].merge('session' => @session0)
-                    when 'session1'
-                      spec['arguments'].merge('session' => @session1)
-                    else
-                      args = spec['arguments'] || {}
-                      if transaction_session
-                        args = args.merge('session' => transaction_session)
-                      end
-                      args
-                    end
       end
 
       attr_reader :arguments
@@ -109,21 +95,36 @@ module Mongo
       # @return [ Result ] The result of executing the operation.
       #
       # @since 2.6.0
-      def execute(collection)
+      def execute(collection, session0, session1, transaction_session=nil)
         # Determine which object the operation method should be called on.
         obj = case object
-              when 'session0'
-                @session0
-              when 'session1'
-                @session1
-              when 'database'
-                collection.database
-              else
-                collection = collection.with(read: read_preference) if collection_read_preference
-                collection = collection.with(read_concern: read_concern) if read_concern
-                collection = collection.with(write: write_concern) if write_concern
-                collection
-              end
+        when 'session0'
+          session0
+        when 'session1'
+          session1
+        when 'database'
+          collection.database
+        else
+          collection = collection.with(read: read_preference) if collection_read_preference
+          collection = collection.with(read_concern: read_concern) if read_concern
+          collection = collection.with(write: write_concern) if write_concern
+          collection
+        end
+
+        @session0 = session0
+        @session1 = session1
+        @arguments = case @spec['arguments'] && @spec['arguments']['session']
+                    when 'session0'
+                      @spec['arguments'].merge('session' => session0)
+                    when 'session1'
+                      @spec['arguments'].merge('session' => session1)
+                    else
+                      args = @spec['arguments'] || {}
+                      if transaction_session
+                        args = args.merge('session' => transaction_session)
+                      end
+                      args
+                    end
 
         if (op_name = OPERATIONS[name]) == :with_transaction
           args = [collection]
@@ -189,8 +190,8 @@ module Mongo
         end
         session.with_transaction(options) do
           callback['operations'].each do |op_spec|
-            op = Operation.new(op_spec, @session0, @session1, session)
-            rv = op.execute(collection)
+            op = Operation.new(op_spec)
+            rv = op.execute(collection, @session0, @session1, session)
             if rv && rv['exception']
               raise rv['exception']
             end
@@ -422,8 +423,12 @@ module Mongo
         Utils.snakeize_hash(@spec['collectionOptions'] && @spec['collectionOptions']['writeConcern'])
       end
 
+      def spec_arguments
+        @spec['arguments']
+      end
+
       def read_preference
-        Utils.snakeize_hash(arguments['readPreference'])
+        Utils.snakeize_hash(spec_arguments['readPreference'])
       end
 
       def collection_read_preference
