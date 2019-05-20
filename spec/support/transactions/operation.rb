@@ -251,7 +251,7 @@ module Mongo
       end
 
       def distinct(collection, context)
-        collection.distinct(field_name, arguments['filter'], context.transform_arguments(options))
+        collection.distinct(arguments['fieldName'], arguments['filter'], context.transform_arguments(options))
       end
 
       def find(collection, context)
@@ -317,8 +317,8 @@ module Mongo
           if arguments.key?(value)
             if respond_to?(key, true)
               opts.merge!(key => send(key))
-            elsif arguments[key.to_s]
-              opts.merge!(key => arguments[key.to_s])
+            elsif arguments[arg_key = Utils.camelize(key.to_s, false)]
+              opts.merge!(key => arguments[arg_key])
             else
               opts
             end
@@ -338,18 +338,6 @@ module Mongo
 
       def ordered
         arguments['ordered']
-      end
-
-      def field_name
-        arguments['fieldName']
-      end
-
-      def array_filters
-        arguments['arrayFilters']
-      end
-
-      def batch_size
-        arguments['batchSize']
       end
 
       def session
