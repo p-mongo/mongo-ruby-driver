@@ -263,12 +263,12 @@ module Mongo
       end
 
       def insert_many(collection, context)
-        result = collection.insert_many(documents, context.transform_arguments(options))
+        result = collection.insert_many(arguments['documents'], context.transform_arguments(options))
         { 'insertedIds' => result.inserted_ids }
       end
 
       def insert_one(collection, context)
-        result = collection.insert_one(document, context.transform_arguments(options))
+        result = collection.insert_one(arguments['document'], context.transform_arguments(options))
         { 'insertedId' => result.inserted_id }
       end
 
@@ -326,14 +326,6 @@ module Mongo
             opts
           end
         end
-      end
-
-      def documents
-        arguments['documents']
-      end
-
-      def document
-        arguments['document']
       end
 
       def requests
