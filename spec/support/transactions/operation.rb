@@ -336,10 +336,6 @@ module Mongo
         arguments['document']
       end
 
-      def ordered
-        arguments['ordered']
-      end
-
       def requests
         arguments['requests'].map do |request|
           case request.keys.first
