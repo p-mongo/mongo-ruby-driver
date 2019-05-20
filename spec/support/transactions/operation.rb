@@ -79,7 +79,9 @@ module Mongo
         when 'database'
           collection.database
         else
-          collection = collection.with(read: read_preference) if collection_read_preference
+          if rp = collection_read_preference
+            collection = collection.with(read: rp)
+          end
           collection = collection.with(read_concern: read_concern) if read_concern
           collection = collection.with(write: write_concern) if write_concern
           collection
@@ -287,19 +289,17 @@ module Mongo
       end
 
       def options
-        ARGUMENT_MAP.reduce({}) do |opts, (key, value)|
-          if arguments.key?(value)
-            if respond_to?(key, true)
-              opts.merge!(key => send(key))
-            elsif arguments[arg_key = Utils.camelize(key.to_s, false)]
-              opts.merge!(key => arguments[arg_key])
-            else
-              opts
-            end
-          else
-            opts
+        out = {}
+        arguments.each do |spec_k, v|
+          ruby_k = Utils.underscore(spec_k).to_sym
+
+          if respond_to?("transform_#{ruby_k}", true)
+            v = send("transform_#{ruby_k}", v)
           end
+
+          out[ruby_k] = v
         end
+        out
       end
 
       def requests
@@ -329,12 +329,14 @@ module Mongo
         op
       end
 
-      def return_document
-        case arguments['returnDocument']
+      def transform_return_document(v)
+        case v
         when 'Before'
           :before
         when 'After'
           :after
+        else
+          raise "Unknown value #{v}"
         end
       end
 
@@ -350,8 +352,8 @@ module Mongo
         @spec['arguments']
       end
 
-      def read_preference
-        Utils.snakeize_hash(spec_arguments['readPreference'])
+      def transform_read_preference(v)
+        Utils.snakeize_hash(v)
       end
 
       def collection_read_preference
