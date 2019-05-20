@@ -16,28 +16,6 @@ module Mongo
   module Transactions
     class Operation
 
-      # Map of operation options to method names.
-      #
-      # @since 2.6.0
-      ARGUMENT_MAP = {
-        array_filters: 'arrayFilters',
-        batch_size: 'batchSize',
-        collation: 'collation',
-        read_preference: 'readPreference',
-        document: 'document',
-        field_name: 'fieldName',
-        filter: 'filter',
-        ordered: 'ordered',
-        pipeline: 'pipeline',
-        projection: 'projection',
-        replacement: 'replacement',
-        return_document: 'returnDocument',
-        session: 'session',
-        sort: 'sort',
-        update: 'update',
-        upsert: 'upsert'
-      }.freeze
-
       # The operation name.
       #
       # @return [ String ] name The operation name.
