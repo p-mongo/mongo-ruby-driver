@@ -160,12 +160,11 @@ module Mongo
         rescue Mongo::Error
         end
 
-        coll = support_client[@spec.collection_name]
+        coll = support_client[@spec.collection_name].with(write: { w: :majority })
         coll.drop
-        coll.with(write: { w: :majority }).drop
         support_client.command(create: @spec.collection_name, writeConcern: { w: :majority })
 
-        coll.with(write: { w: :majority }).insert_many(@data) unless @data.empty?
+        coll.insert_many(@data) unless @data.empty?
         admin_support_client.command(@fail_point) if @fail_point
 
         @collection = test_client[@spec.collection_name]
