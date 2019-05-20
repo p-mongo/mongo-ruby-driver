@@ -78,7 +78,7 @@ module Mongo
       #
       # @since 2.6.0
       def initialize(spec)
-        @spec = spec
+        @spec = IceNine.deep_freeze(spec)
         @name = spec['name']
         @arguments = spec['arguments'] || {}
       end
@@ -224,7 +224,7 @@ module Mongo
         return_doc = {}
         return_doc['deletedCount'] = result.deleted_count || 0
         return_doc['insertedIds'] = result.inserted_ids if result.inserted_ids
-        return_doc['upsertedId'] = result.upserted_id if upsert
+        return_doc['upsertedId'] = result.upserted_id if arguments['upsert']
         return_doc['upsertedCount'] = result.upserted_count || 0
         return_doc['matchedCount'] = result.matched_count || 0
         return_doc['modifiedCount'] = result.modified_count || 0
@@ -274,7 +274,7 @@ module Mongo
 
       def update_return_doc(result)
         return_doc = {}
-        return_doc['upsertedId'] = result.upserted_id if upsert
+        return_doc['upsertedId'] = result.upserted_id if arguments['upsert']
         return_doc['upsertedCount'] = result.upserted_count
         return_doc['matchedCount'] = result.matched_count
         return_doc['modifiedCount'] = result.modified_count if result.modified_count
@@ -314,8 +314,14 @@ module Mongo
 
       def options
         ARGUMENT_MAP.reduce({}) do |opts, (key, value)|
-          if arguments.key?(value) && respond_to?(key, true)
-            opts.merge!(key => send(key))
+          if arguments.key?(value)
+            if respond_to?(key, true)
+              opts.merge!(key => send(key))
+            elsif arguments[key.to_s]
+              opts.merge!(key => arguments[key.to_s])
+            else
+              opts
+            end
           else
             opts
           end
@@ -383,10 +389,6 @@ module Mongo
         op[op_name][:array_filters] =  request['arguments']['arrayFilters'] if request['arguments']['arrayFilters']
         op[op_name] = request['arguments']['document'] if request['arguments']['document']
         op
-      end
-
-      def upsert
-        arguments['upsert']
       end
 
       def return_document
