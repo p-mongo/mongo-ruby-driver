@@ -340,10 +340,6 @@ module Mongo
         arguments['ordered']
       end
 
-      def session
-        arguments['session']
-      end
-
       def requests
         arguments['requests'].map do |request|
           case request.keys.first
