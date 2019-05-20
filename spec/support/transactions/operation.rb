@@ -255,7 +255,10 @@ module Mongo
       end
 
       def find(collection, context)
-        opts = modifiers ? context.transform_arguments(options).merge(modifiers: BSON::Document.new(modifiers)) : context.transform_arguments(options)
+        opts = context.transform_arguments(options)
+        if modifiers
+          opts = opts.merge(modifiers: BSON::Document.new(modifiers))
+        end
         collection.find(filter, opts).to_a
       end
 
