@@ -308,14 +308,7 @@ module Mongo
       end
 
       def transform_return_document(v)
-        case v
-        when 'Before'
-          :before
-        when 'After'
-          :after
-        else
-          raise "Unknown value #{v}"
-        end
+        Utils.underscore(v).to_sym
       end
 
       def read_concern
