@@ -64,7 +64,7 @@ module Mongo
         end
 
         @ops = @operations.map do |op|
-          Operation.new(op, @session0, @session1)
+          Operation.new(op)
         end
 
         @expected_results = @operations.map do |o|
@@ -95,7 +95,9 @@ module Mongo
         @test_client ||= ClientRegistry.instance.global_client('authorized_without_retry_writes').with(
           @client_options.merge(
             database: @spec.database_name,
-            app_name: 'this is used solely to force the new client to create its own cluster'))
+        )).tap do |client|
+          client.subscribe(Mongo::Monitoring::COMMAND, event_subscriber)
+        end
       end
 
       def event_subscriber
@@ -111,7 +113,35 @@ module Mongo
       #
       # @since 2.6.0
       def run
-        test_client.subscribe(Mongo::Monitoring::COMMAND, event_subscriber)
+        results = @ops.map do |op|
+          op.execute(@collection, @session0, @session1)
+        end
+
+        session0_id = @session0.session_id
+        session1_id = @session1.session_id
+
+        actual_events = Utils.yamlify_command_events(event_subscriber.started_events)
+        actual_events.each do |e|
+
+          # Replace the session id placeholders with the actual session ids.
+          payload = e['command_started_event']
+          payload['command']['lsid'] = 'session0' if payload['command']['lsid'] == session0_id
+          payload['command']['lsid'] = 'session1' if payload['command']['lsid'] == session1_id
+
+        end
+
+        @results = {
+          results: results,
+          contents: @collection.with(read_concern: { level: 'local' }).find.to_a,
+          events: actual_events,
+        }
+      end
+
+      def setup_all_tests
+        begin
+          admin_support_client.command(killAllSessions: [])
+        rescue Mongo::Error
+        end
 
         $distinct_ran ||= if @ops.any? { |op| op.name == 'distinct' }
           if ClusterConfig.instance.mongos?
@@ -128,43 +158,6 @@ module Mongo
           end
         end
 
-        results = @ops.map do |op|
-          op.execute(@collection)
-        end
-
-        session0_id = @session0.session_id
-        session1_id = @session1.session_id
-
-        @session0.end_session
-        @session1.end_session
-
-        actual_events = Utils.yamlify_command_events(event_subscriber.started_events)
-        actual_events.each do |e|
-
-          # Replace the session id placeholders with the actual session ids.
-          payload = e['command_started_event']
-          payload['command']['lsid'] = 'session0' if payload['command']['lsid'] == session0_id
-          payload['command']['lsid'] = 'session1' if payload['command']['lsid'] == session1_id
-
-        end
-
-        if @fail_point
-          admin_support_client.command(configureFailPoint: 'failCommand', mode: 'off')
-        end
-
-        @results = {
-          results: results,
-          contents: @collection.with(read_concern: { level: 'local' }).find.to_a,
-          events: actual_events,
-        }
-      end
-
-      def setup_test
-        begin
-          admin_support_client.command(killAllSessions: [])
-        rescue Mongo::Error
-        end
-
         coll = support_client[@spec.collection_name].with(write: { w: :majority })
         coll.drop
         support_client.command(create: @spec.collection_name, writeConcern: { w: :majority })
@@ -173,18 +166,22 @@ module Mongo
         admin_support_client.command(@fail_point) if @fail_point
 
         @collection = test_client[@spec.collection_name]
+      end
 
+      def teardown_all_tests
+        if @fail_point
+          admin_support_client.command(configureFailPoint: 'failCommand', mode: 'off')
+        end
+      end
+
+      def setup_test
         @session0 = test_client.start_session(@session_options[:session0] || {})
         @session1 = test_client.start_session(@session_options[:session1] || {})
       end
 
       def teardown_test
-        if @admin_support_client
-          @admin_support_client.close
-        end
-        if @test_client
-          @test_client.close
-        end
+        @session0.end_session
+        @session1.end_session
       end
     end
   end

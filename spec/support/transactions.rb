@@ -36,6 +36,18 @@ def define_transactions_spec_tests(test_paths)
 
             before(:all) do
               if req.satisfied?
+                test.setup_all_tests
+              end
+            end
+
+            after(:all) do
+              if req.satisfied?
+                test.teardown_all_tests
+              end
+            end
+
+            before(:each) do
+              if req.satisfied?
                 test.setup_test
               end
             end
