@@ -16,33 +16,6 @@ module Mongo
   module Transactions
     class Operation
 
-      # Map of operation names to method names.
-      #
-      # @since 2.6.0
-      OPERATIONS = {
-        'startTransaction' => :start_transaction,
-        'abortTransaction' => :abort_transaction,
-        'commitTransaction' => :commit_transaction,
-        'withTransaction' => :with_transaction,
-        'aggregate' => :aggregate,
-        'deleteMany' => :delete_many,
-        'deleteOne' => :delete_one,
-        'insertMany' => :insert_many,
-        'insertOne' => :insert_one,
-        'replaceOne' => :replace_one,
-        'updateMany' => :update_many,
-        'updateOne' => :update_one,
-        'findOneAndDelete' => :find_one_and_delete,
-        'findOneAndReplace' => :find_one_and_replace,
-        'findOneAndUpdate' => :find_one_and_update,
-        'bulkWrite' => :bulk_write,
-        'count' => :count,
-        'countDocuments' => :count_documents,
-        'distinct' => :distinct,
-        'find' => :find,
-        'runCommand' => :run_command,
-      }.freeze
-
       # Map of operation options to method names.
       #
       # @since 2.6.0
@@ -130,7 +103,8 @@ module Mongo
           session1,
           session)
 
-        if (op_name = OPERATIONS[name]) == :with_transaction
+        op_name = Utils.underscore(name).to_sym
+        if op_name == :with_transaction
           args = [collection]
         else
           args = []
@@ -343,7 +317,7 @@ module Mongo
       end
 
       def bulk_request(request)
-        op_name = OPERATIONS[request['name']]
+        op_name = Utils.underscore(request['name']).to_sym
         op = { op_name => {} }
 
         op[op_name][:filter] = request['arguments']['filter'] if request['arguments']['filter']
