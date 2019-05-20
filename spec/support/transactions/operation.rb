@@ -256,8 +256,8 @@ module Mongo
 
       def find(collection, context)
         opts = context.transform_arguments(options)
-        if modifiers
-          opts = opts.merge(modifiers: BSON::Document.new(modifiers))
+        if arguments['modifiers']
+          opts = opts.merge(modifiers: BSON::Document.new(arguments['modifiers']))
         end
         collection.find(filter, opts).to_a
       end
@@ -287,12 +287,12 @@ module Mongo
       end
 
       def update_many(collection, context)
-        result = collection.update_many(filter, update, context.transform_arguments(options))
+        result = collection.update_many(filter, arguments['update'], context.transform_arguments(options))
         update_return_doc(result)
       end
 
       def update_one(collection, context)
-        result = collection.update_one(filter, update, context.transform_arguments(options))
+        result = collection.update_one(filter, arguments['update'], context.transform_arguments(options))
         update_return_doc(result)
       end
 
@@ -305,7 +305,7 @@ module Mongo
       end
 
       def find_one_and_update(collection, context)
-        collection.find_one_and_update(filter, update, context.transform_arguments(options))
+        collection.find_one_and_update(filter, arguments['update'], context.transform_arguments(options))
       end
 
       def object
@@ -365,7 +365,7 @@ module Mongo
             { insert_one: request['insertOne']['document'] }
           when 'updateOne' then
             update = request['updateOne']
-            { update_one: { filter: update['filter'], update: update['update'] } }
+            { update_one: { filter: arguments['update']['filter'], update: arguments['update']['update'] } }
           when 'name' then
             bulk_request(request)
           end
@@ -396,14 +396,6 @@ module Mongo
         when 'After'
           :after
         end
-      end
-
-      def update
-        arguments['update']
-      end
-
-      def modifiers
-        arguments['modifiers']
       end
 
       def read_concern
