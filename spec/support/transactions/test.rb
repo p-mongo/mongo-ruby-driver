@@ -87,10 +87,11 @@ module Mongo
       end
 
       def test_client
-        @test_client ||= ClientRegistry.instance.global_client('authorized_without_retry_writes').with(
-          @client_options.merge(
-            database: @spec.database_name,
-            app_name: 'this is used solely to force the new client to create its own cluster'))
+        @test_client ||= ClientRegistry.instance.global_client(
+          'authorized_without_retry_writes'
+        ).with(@client_options.merge(
+          database: @spec.database_name,
+        ))
       end
 
       def event_subscriber
@@ -134,6 +135,9 @@ module Mongo
         @session1.end_session
 
         actual_events = Utils.yamlify_command_events(event_subscriber.started_events)
+        actual_events = actual_events.reject do |event|
+          event['command_started_event']['command']['endSessions']
+        end
         actual_events.each do |e|
 
           # Replace the session id placeholders with the actual session ids.
@@ -141,10 +145,6 @@ module Mongo
           payload['command']['lsid'] = 'session0' if payload['command']['lsid'] == session0_id
           payload['command']['lsid'] = 'session1' if payload['command']['lsid'] == session1_id
 
-        end
-
-        if @fail_point
-          admin_support_client.command(configureFailPoint: 'failCommand', mode: 'off')
         end
 
         @results = {
@@ -178,11 +178,13 @@ module Mongo
       end
 
       def teardown_test
-        if @admin_support_client
-          @admin_support_client.close
+
+        if @fail_point
+          admin_support_client.command(configureFailPoint: 'failCommand', mode: 'off')
         end
+
         if @test_client
-          @test_client.close
+          @test_client.cluster.session_pool.end_sessions
         end
       end
     end

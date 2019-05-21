@@ -165,15 +165,20 @@ module Mongo
     # @return [ nil ] Always nil.
     #
     # @since 2.5.0
-    def end_session
+    def end_session(end_server_session = false)
       if !ended? && @client
         if within_states?(TRANSACTION_IN_PROGRESS_STATE)
           begin
             abort_transaction
           rescue Mongo::Error
+            end_server_session = true
           end
         end
-        @client.cluster.session_pool.checkin(@server_session)
+        if end_server_session
+          @client.cluster.session_pool.end_server_session(@server_session)
+        else
+          @client.cluster.session_pool.checkin(@server_session)
+        end
       end
     ensure
       @server_session = nil

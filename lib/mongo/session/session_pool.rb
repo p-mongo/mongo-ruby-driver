@@ -117,7 +117,15 @@ module Mongo
               :selector => {endSessions: @queue.shift(10_000).collect { |s| s.session_id }},
               :db_name => Database::ADMIN).execute(server)
         end
-      rescue
+      rescue Mongo::Error
+      end
+
+      def end_server_session(server_session)
+        server = ServerSelector.get(mode: :primary_preferred).select_server(@cluster)
+        Operation::Command.new(
+          selector: {endSessions: [server_session.session_id]},
+          db_name: Database::ADMIN,
+        ).execute(server)
       end
 
       private
