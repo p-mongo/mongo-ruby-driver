@@ -16,10 +16,47 @@ To inspect a certificate:
 
     openssl x509 -text -in path.pem
 
-Start a test server using the provided certificate:
+## Manual Testing
 
-    openssl s_server -port 29999 -cert server.pem
+Start a test server using the simple certificate:
 
-Use OpenSSL's test client to test certificate verification:
+    openssl s_server -port 29999 -CAfile ca.crt -cert server.pem -verify 1
 
-    openssl s_server -connect :29999 -cert client.pem
+Use OpenSSL's test client to test certificate verification using the
+simple certificate:
+
+    openssl s_client -connect :29999 -CAfile ca.crt -cert client.pem \
+        -verify 1 -verify_return_error
+
+Same thing but using the second level certificate with the intermediate
+certificate (server follows chain up to the CA):
+
+    openssl s_client -connect :29999 -CAfile ca.crt \
+        -cert client-second-level-bundle.pem \
+        -verify 1 -verify_return_error
+
+Note however, that even though a client to server connection succeeds using
+the second level client bundle, openssl appears to be incapable to simply
+verify the same certificate chain using the verify command:
+
+    # This fails
+    openssl verify -verbose -CAfile ca.crt -untrusted client-int.crt \
+        client-second-level.pem 
+
+    
+    # Also fails
+    openssl verify -trusted client-int.crt client-second-level.crt
+
+And when the server's certificate uses an intermediate certificate, the
+client seems to be unable to verify it also:
+
+    openssl s_server -port 29999  -CAfile ca.crt -verify 1 \
+        -cert server-second-level-bundle.pem
+
+    # This fails
+    openssl s_client -connect :29999 -CAfile ca.crt -cert client.pem \
+        -verify 1 -verify_return_error
+
+To sum up, openssl's command line tools appear to only handle certificate
+chains provided by the client when the server is verifying them, not the
+other way around and not when trying to standalone verify the chain.
