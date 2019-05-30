@@ -494,7 +494,7 @@ describe Mongo::Socket::SSL do
       end
     end
 
-    context 'when a CA certificate chain is provided' do
+    context 'when the client certificate uses an intermediate certificate' do
       context 'as a path to a file' do
         require_local_tls
 
