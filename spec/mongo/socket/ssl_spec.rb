@@ -500,8 +500,10 @@ describe Mongo::Socket::SSL do
 
         let(:options) do
           super().merge(
-            :ssl_ca_cert => CHAIN_PEM,
-            :ssl_verify => true
+            ssl_cert: SpecConfig.instance.second_level_cert_path,
+            ssl_key: SpecConfig.instance.second_level_key_path,
+            ssl_ca_cert: CA_PEM,
+            ssl_verify: true,
           )
         end
 

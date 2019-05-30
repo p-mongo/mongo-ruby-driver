@@ -16,7 +16,7 @@ To inspect a certificate:
 
     openssl x509 -text -in path.pem
 
-## Manual Testing
+## Manual Testing - openssl
 
 Start a test server using the simple certificate:
 
@@ -43,7 +43,6 @@ verify the same certificate chain using the verify command:
     openssl verify -verbose -CAfile ca.crt -untrusted client-int.crt \
         client-second-level.pem 
 
-    
     # Also fails
     openssl verify -trusted client-int.crt client-second-level.crt
 
@@ -60,3 +59,20 @@ client seems to be unable to verify it also:
 To sum up, openssl's command line tools appear to only handle certificate
 chains provided by the client when the server is verifying them, not the
 other way around and not when trying to standalone verify the chain.
+
+## Manual Testing - mongo
+
+When it comes to `mongod` and `mongo`, certificate chains are supported in
+both directions:
+
+    mongod --sslMode requireSSL \
+        --sslCAFile ca.crt \
+        --sslPEMKeyFile server-second-level-bundle.pem \
+        --sslClientCertificate client.pem
+
+    mongo --host localhost --ssl \
+        --sslCAFile cert/ca.crt \
+        --sslPEMKeyFile client-second-level-bundle.pem
+
+The `--host` option needs to be given to `mongo` because the certificates here
+do not include 127.0.0.1 in subject alternate name.
