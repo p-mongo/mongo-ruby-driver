@@ -508,6 +508,7 @@ describe Mongo::Socket::SSL do
         end
 
         it 'verifies the server certificate' do
+        p options
           expect(socket).to be_alive
         end
       end

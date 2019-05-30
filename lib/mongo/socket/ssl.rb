@@ -150,6 +150,61 @@ module Mongo
             context.verify_mode = OpenSSL::SSL::VERIFY_NONE
           end
 
+          if context_cert_store = context.cert_store
+            context.verify_callback = Proc.new do |ok, store_context|
+              begin
+                chain = store_context.chain
+                cert = store_context.current_cert
+                cert_index = chain.index(cert)
+                if cert_index.nil?
+                  return false
+                end
+
+                current_chain = chain[cert_index+1...chain.length-1]
+
+                p 44
+                rv = context_cert_store.verify(cert, current_chain)
+                p cert
+                p current_chain
+                p rv
+                p context_cert_store.error
+                p context_cert_store.error_string
+                rv
+
+=begin
+                next_cert = chain[cert_index + 1]
+                rv = if next_cert
+                p :next
+                  store = OpenSSL::X509::Store.new
+                  p ['z',next_cert,cert_index,chain,'---------',cert,'xxxxxxx',next_cert]
+                  store.add_cert(next_cert)
+                  store.verify(cert)
+                else
+                p :base
+                  context_cert_store.verify(cert)
+                end
+                puts "returning #{rv}"
+                rv
+=end
+              rescue => e
+                puts "#{e.class}: #{e}"
+                puts e.backtrace.join("\n")
+                raise
+              end
+            end
+          end
+
+=begin
+          p cert.methods.grep /verify/
+          byebug
+            p [a, b, b.chain.index(b.current_cert)]
+            true
+            false
+          end
+=end
+
+          #byebug
+
           if context.respond_to?(:verify_hostname=)
             # We manually check the hostname after the connection is established if necessary, so
             # we disable it here in order to give consistent errors across Ruby versions which
@@ -185,6 +240,7 @@ module Mongo
       def set_cert_verification(context, options)
         context.verify_mode = OpenSSL::SSL::VERIFY_PEER
         cert_store = OpenSSL::X509::Store.new
+        byebug
         if options[:ssl_ca_cert]
           cert_store.add_cert(OpenSSL::X509::Certificate.new(File.open(options[:ssl_ca_cert])))
         elsif options[:ssl_ca_cert_string]
