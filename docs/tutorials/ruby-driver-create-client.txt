@@ -628,6 +628,15 @@ be configured to contain the trusted root certificates only and the intermediate
 certificates, if any, should be provided in the server or client certificates
 by concatenating them after the leaf server and client certificates, respectively.
 
+The Ruby driver performs strict X509 certificate verification, which requires
+that both of the following fields are set in the intermediate certificate(s):
+
+- X509v3 Basic Constraints: CA: TRUE -- Can sign certificates
+- X509v3 Key Usage: Key Cert Sign -- Can sign certificates
+
+More information about these flags can be found `here
+<https://stackoverflow.com/questions/5795256/what-is-the-difference-between-the-x-509-v3-extensions-basic-constraints-and-key>`.
+
 It is a common pitfall to concatenate intermediate certificates to the root
 CA certificates passed in ``tlsCAFile`` / ``ssl_ca_cert`` options. By doing
 so, the intermediate certificates are elevated to trusted status and are
