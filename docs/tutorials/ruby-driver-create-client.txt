@@ -589,6 +589,55 @@ Details on Timeout Options
   operations that support this option.
 
 
+Details on TLS Connections
+--------------------------
+
+To connect to the MongoDB cluster using TLS, pass ``tls`` Ruby or URI option
+to the ``Mongo::Client`` constructor. TLS must be explicitly configured on the
+client side when the cluster requires TLS connections - there is currently no
+automatic detection of whether TLS is required.
+
+The driver will attempt to verify the server's TLS certificate by default, and
+will abort the connection if this verification fails. In order for this
+verification to succeed, you may need to specify the certificate authority
+that the server certificate is signed with via ``tlsCAFile`` URI option or
+``ssl_ca_cert`` Ruby option. If these options are not given, the driver will
+use the default system root certificate store as the trust anchor; if these
+options are given, the default system root certificate store will not be used.
+To omit TLS certificate verification by the client, which is not
+recommended, specify ``tlsInsecure=true`` URI option or ``ssl_verify: false``
+Ruby option.
+
+By default, MongoDB server will verify the connecting clients' TLS certificates,
+which requires the client to specify a client certificate when connecting.
+This can be accomplished through ``tlsCertificateKeyFile`` URI option which
+takes as the argument the path to a single file containing both the certificate
+and the corresponding private key, or through ``:ssl_cert`` and ``:ssl_key``
+Ruby options. The Ruby options allow passing separace certificate and key files
+to the driver, but also can be pointed at the single PEM file containing both
+the certificate and the corresponding private key. Further information on
+configuring MongoDB server for TLS is available in the `MongoDB manual
+<https://docs.mongodb.com/manual/tutorial/configure-ssl/>`_.
+
+Using Intermediate Certificates
+```````````````````````````````
+
+It is possible to use certificate chains for both the client and the server
+certificates. When using chains, the certificate authority parameter should
+be configured to contain the trusted root certificates only and the intermediate
+certificates, if any, should be provided in the server or client certificates
+by concatenating them after the leaf server and client certificates, respectively.
+
+It is a common pitfall to concatenate intermediate certificates to the root
+CA certificates passed in ``tlsCAFile`` / ``ssl_ca_cert`` options. By doing
+so, the intermediate certificates are elevated to trusted status and are
+themselves not verified against the actual CA root. More information on this
+issue is available `here <https://mail.python.org/pipermail/cryptography-dev/2016-August/000676.html>`.
+
+The Ruby driver does allow passing multiple certificates to ``tlsCAFile`` /
+``:ssl_ca_cert`` options. All such certificates will become trust anchors.
+
+
 TCP Keepalive Configuration
 ---------------------------
 
