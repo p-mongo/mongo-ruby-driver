@@ -1,7 +1,7 @@
 set_fcv() {
   if test -n "$FCV"; then
     mongo --eval 'assert.commandWorked(db.adminCommand( { setFeatureCompatibilityVersion: "'"$FCV"'" } ));' "$MONGODB_URI"
-    mongo --quiet --eval 'db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } )' |grep  "version.*$FCV"
+    mongo --quiet --eval 'db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } )' "$MONGODB_URI" |grep  "version.*$FCV"
   fi
 }
 
@@ -113,4 +113,23 @@ kill_jruby() {
     echo "terminating remaining jruby processes"
     for pid in $(ps -ef | grep "jruby" | grep -v grep | awk '{print $2}'); do kill -9 $pid; done
   fi
+}
+
+prepare_server() {
+  arch=$1
+  version=$2
+  
+  url=http://downloads.10gen.com/linux/mongodb-linux-x86_64-enterprise-$arch-$version.tgz
+  mongodb_dir="$MONGO_ORCHESTRATION_HOME"/mdb
+  mkdir -p "$mongodb_dir"
+  curl $url |tar xz -C "$mongodb_dir" -f -
+  BINDIR="$mongodb_dir"/`basename $url |sed -e s/.tgz//`/bin
+  export PATH="$BINDIR":$PATH
+}
+
+install_mlaunch() {
+  pythonpath="$MONGO_ORCHESTRATION_HOME"/python
+  pip install -t "$pythonpath" 'mtools[mlaunch]'
+  export PATH="$pythonpath/bin":$PATH
+  export PYTHONPATH="$pythonpath"
 }
