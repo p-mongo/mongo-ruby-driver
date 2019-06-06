@@ -559,6 +559,9 @@ describe Mongo::Socket::SSL do
     context 'when the client certificate uses an intermediate certificate' do
       require_local_tls
 
+      # https://github.com/jruby/jruby-openssl/issues/181
+      fails_on_jruby
+
       let(:server) do
         ClientRegistry.instance.global_client('authorized').cluster.next_primary
       end
