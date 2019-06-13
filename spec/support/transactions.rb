@@ -25,6 +25,9 @@ def define_transactions_spec_tests(test_paths)
 
     context(spec.description) do
       define_spec_tests_with_requirements(spec) do |req|
+        let(:client) {
+        authorized_client.with(max_write_retries: 0) }
+
         spec.tests.each do |test|
 
           before do
