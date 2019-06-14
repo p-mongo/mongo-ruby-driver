@@ -506,6 +506,10 @@ axes:
         display_name: "4.0"
         variables:
           VERSION: "4.0"
+      - id: "4.2"
+        display_name: "4.2"
+        variables:
+          VERSION: "4.2"
       - id: "3.6"
         display_name: "3.6"
         variables:
@@ -664,6 +668,13 @@ axes:
         display_name: AS
         variables:
           WITH_ACTIVE_SUPPORT: true
+  - id: "single-mongos"
+    display_name: Single Mongos
+    values:
+      - id: "single-mongos"
+        display_name: Single Mongos
+        variables:
+          SINGLE_MONGOS: true
 
 
 buildvariants:
@@ -705,6 +716,20 @@ buildvariants:
     ruby: "ruby-2.6"
     mongodb-version: "*"
     topology: "*"
+  display_name: "${mongodb-version} ${topology} ${auth-and-ssl} ${ruby}"
+  run_on:
+    - rhel70-small
+  tasks:
+     - name: "test"
+
+-
+  matrix_name: "single-mongos"
+  matrix_spec:
+    auth-and-ssl: ["auth-and-ssl", "noauth-and-nossl"]
+    ruby: "ruby-2.6"
+    mongodb-version: "4.2"
+    topology: "sharded-cluster"
+    single-mongos: single-mongos
   display_name: "${mongodb-version} ${topology} ${auth-and-ssl} ${ruby}"
   run_on:
     - rhel70-small
@@ -855,7 +880,7 @@ buildvariants:
   matrix_name: "local-tls"
   matrix_spec:
     ruby: "*"
-    mongodb-version: '4.0'
+    mongodb-version: ['4.0', '4.2']
     topology: standalone
   display_name: "Local TLS ${ruby}"
   run_on:
