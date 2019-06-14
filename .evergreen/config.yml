@@ -86,6 +86,7 @@ functions:
               export RETRY_READS=${RETRY_READS}
               export RETRY_WRITES=${RETRY_WRITES}
               export WITH_ACTIVE_SUPPORT="${WITH_ACTIVE_SUPPORT}"
+              export SINGLE_MONGOS="${SINGLE_MONGOS}"
            EOT
            # See what we've done
            cat expansion.yml
