@@ -188,6 +188,7 @@ describe Mongo::Operation::Insert do
       end
 
       context 'when write concern is unacknowledged' do
+        require_no_multi_shard
 
         let(:write_concern) do
           Mongo::WriteConcern.get(w: 0)
