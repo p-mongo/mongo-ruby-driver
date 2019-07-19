@@ -204,15 +204,17 @@ module Mongo
           end
         end
 
-        # Work around https://jira.mongodb.org/browse/SERVER-41532.
-        # Sometimes the tests fail in sharded configurations with this error:
-        # #<Mongo::Error::OperationFailure: Transaction beafbcd6-cc65-4a6b-94ed-6ffd7cbca256:1 was aborted on statement 0 due to: a non-retryable snapshot error :: caused by :: Encountered error from localhost:14442 during a transaction :: caused by :: Unable to read from a snapshot due to pending collection catalog changes; please retry the operation. Snapshot timestamp is Timestamp(1563575705, 39). Collection minimum is Timestamp(1563575705, 42) (246)>
-        mongos_each_direct_client do |direct_client|
-          5.times do
-            session = direct_client.start_session
-            session.with_transaction(read_concern: {level: :snapshot}) do
-              coll.insert_one(test: 1)
-              coll.delete_many
+        if @data.empty?
+          # Work around https://jira.mongodb.org/browse/SERVER-41532.
+          # Sometimes the tests fail in sharded configurations with this error:
+          # #<Mongo::Error::OperationFailure: Transaction beafbcd6-cc65-4a6b-94ed-6ffd7cbca256:1 was aborted on statement 0 due to: a non-retryable snapshot error :: caused by :: Encountered error from localhost:14442 during a transaction :: caused by :: Unable to read from a snapshot due to pending collection catalog changes; please retry the operation. Snapshot timestamp is Timestamp(1563575705, 39). Collection minimum is Timestamp(1563575705, 42) (246)>
+          mongos_each_direct_client do |direct_client|
+            5.times do
+              session = direct_client.start_session
+              session.with_transaction(read_concern: {level: :snapshot}) do
+                coll.insert_one(test: 1)
+                coll.delete_many
+              end
             end
           end
         end
