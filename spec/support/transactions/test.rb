@@ -198,13 +198,26 @@ module Mongo
         coll.drop
         support_client.command(create: @spec.collection_name, writeConcern: { w: :majority })
 
-        coll.insert_many(@data) unless @data.empty?
-
         $distinct_ran ||= if description =~ /distinct/ || @ops.any? { |op| op.name == 'distinct' }
           mongos_each_direct_client do |direct_client|
             direct_client['test'].distinct('foo').to_a
           end
         end
+
+        # Work around https://jira.mongodb.org/browse/SERVER-41532.
+        # Sometimes the tests fail in sharded configurations with this error:
+        # #<Mongo::Error::OperationFailure: Transaction beafbcd6-cc65-4a6b-94ed-6ffd7cbca256:1 was aborted on statement 0 due to: a non-retryable snapshot error :: caused by :: Encountered error from localhost:14442 during a transaction :: caused by :: Unable to read from a snapshot due to pending collection catalog changes; please retry the operation. Snapshot timestamp is Timestamp(1563575705, 39). Collection minimum is Timestamp(1563575705, 42) (246)>
+        mongos_each_direct_client do |direct_client|
+          5.times do
+            session = direct_client.start_session
+            session.with_transaction(read_concern: {level: :snapshot}) do
+              coll.insert_one(test: 1)
+              coll.delete_many
+            end
+          end
+        end
+
+        coll.insert_many(@data) unless @data.empty?
 
         admin_support_client.command(@fail_point) if @fail_point
 
