@@ -46,7 +46,7 @@ module Mongo
       #
       # @since 2.9.0
       def published(event)
-        log_debug("EVENT: #{event.summary}") if logger.debug?
+        log_info("EVENT: #{event.summary}") if logger.info?
       end
     end
   end

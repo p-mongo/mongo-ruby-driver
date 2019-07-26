@@ -128,10 +128,10 @@ describe 'Connection pool timing test' do
 
       20.times do |i|
         threads << Thread.new do
-          4000.times do |j|
-            collection.find(a: i+j)
+          40.times do |j|
+            collection.find(a: i+j).to_a
             sleep 0.001
-            collection.find(a: i+j)
+            collection.find(a: i+j).to_a
           end
         end
       end
