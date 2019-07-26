@@ -6,7 +6,10 @@ describe 'Connection pool timing test' do
   end
 
   let(:client) do
-    @client = authorized_client.with(options)
+    @client = authorized_client.with(options.merge(monitoring: true)).tap do |client|
+      subscriber = Mongo::Monitoring::CmapLogSubscriber.new
+      client.subscribe( Mongo::Monitoring::CONNECTION_POOL, subscriber )
+    end
   end
 
   let!(:collection) do
