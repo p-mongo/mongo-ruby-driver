@@ -159,12 +159,10 @@ module Mongo
         return
       end
 
-      # Need to record start time prior to starting monitoring
-      start_time = Time.now
-
-      servers.each do |server|
-        server.start_monitoring
-      end
+      # We do not take @update_lock here, thus update instance variables
+      # prior to starting monitoring threads.
+      @connecting = false
+      @connected = true
 
       if options[:cleanup] != false
         @cursor_reaper = CursorReaper.new
@@ -179,8 +177,12 @@ module Mongo
         @periodic_executor.run!
       end
 
-      @connecting = false
-      @connected = true
+      # Need to record start time prior to starting monitoring
+      start_time = Time.now
+
+      servers.each do |server|
+        server.start_monitoring
+      end
 
       if options[:scan] != false
         server_selection_timeout = options[:server_selection_timeout] || ServerSelector::SERVER_SELECTION_TIMEOUT
@@ -432,28 +434,24 @@ module Mongo
     #
     # @since 2.1.0
     def disconnect!(wait=false)
-      unless @connecting || @connected
-        return true
-      end
-      if options[:cleanup] != false
-        session_pool.end_sessions
-        @periodic_executor.stop!
-      end
-      @servers.each do |server|
-        if server.connected?
-          server.disconnect!(wait)
-          publish_sdam_event(
-            Monitoring::SERVER_CLOSED,
-            Monitoring::Event::ServerClosed.new(server.address, topology)
-          )
+      @update_lock.synchronize do
+        unless @connecting || @connected
+          return true
         end
+        if options[:cleanup] != false
+          session_pool.end_sessions
+          @periodic_executor.stop!
+        end
+        @servers.each do |server|
+          disconnect_server_if_connected(server)
+        end
+        publish_sdam_event(
+          Monitoring::TOPOLOGY_CLOSED,
+          Monitoring::Event::TopologyClosed.new(topology)
+        )
+        @connecting = @connected = false
+        true
       end
-      publish_sdam_event(
-        Monitoring::TOPOLOGY_CLOSED,
-        Monitoring::Event::TopologyClosed.new(topology)
-      )
-      @connecting = @connected = false
-      true
     end
 
     # Reconnect all servers.
@@ -467,14 +465,16 @@ module Mongo
     # @deprecated Use Client#reconnect to reconnect to the cluster instead of
     #   calling this method. This method does not send SDAM events.
     def reconnect!
-      @connecting = true
-      scan!
-      servers.each do |server|
-        server.reconnect!
+      @update_lock.synchronize do
+        @connecting = true
+        scan!
+        servers.each do |server|
+          server.reconnect!
+        end
+        @periodic_executor.restart!
+        @connecting = false
+        @connected = true
       end
-      @periodic_executor.restart!
-      @connecting = false
-      @connected = true
     end
 
     # Force a scan of all known servers in the cluster.
@@ -709,13 +709,7 @@ module Mongo
       removed_servers = @servers.select { |s| s.address == address }
       @update_lock.synchronize { @servers = @servers - removed_servers }
       removed_servers.each do |server|
-        if server.connected?
-          server.disconnect!
-          publish_sdam_event(
-            Monitoring::SERVER_CLOSED,
-            Monitoring::Event::ServerClosed.new(address, topology)
-          )
-        end
+        disconnect_server_if_connected(server)
       end
       removed_servers.any?
     end
@@ -779,6 +773,16 @@ module Mongo
         !!topology.logical_session_timeout
       rescue Error::NoServerAvailable
         false
+      end
+    end
+
+    def disconnect_server_if_connected(server)
+      if server.connected?
+        server.disconnect!
+        publish_sdam_event(
+          Monitoring::SERVER_CLOSED,
+          Monitoring::Event::ServerClosed.new(server.address, topology)
+        )
       end
     end
   end
