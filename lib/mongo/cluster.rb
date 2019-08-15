@@ -112,7 +112,7 @@ module Mongo
       @event_listeners = Event::Listeners.new
       @options = options.freeze
       @app_metadata = Server::AppMetadata.new(@options)
-      @update_lock = Mutex.new
+      @update_lock = ReentrantMutex.new
       @sdam_flow_lock = Mutex.new
       @cluster_time = nil
       @cluster_time_lock = Mutex.new
@@ -700,18 +700,32 @@ module Mongo
     #   server.remove('127.0.0.1:27017')
     #
     # @param [ String ] host The host/port or socket address.
+    # @param [ true | false ] disconnect Whether to disconnect the servers
+    #   being removed. For internal driver use only.
     #
-    # @return [ true|false ] Whether any servers were removed.
+    # @return [ Array<Server> | true | false ] If disconnect is true,
+    #   returns whether any servers were removed. If disconnect is false,
+    #   returns an array of servers that were removed (and should be
+    #   disconnected by the caller).
     #
-    # @since 2.0.0, return value added in 2.7.0
-    def remove(host)
+    # @note The return value of this method is not part of the driver's
+    #   public API.
+    #
+    # @since 2.0.0
+    def remove(host, disconnect: true)
       address = Address.new(host)
       removed_servers = @servers.select { |s| s.address == address }
       @update_lock.synchronize { @servers = @servers - removed_servers }
-      removed_servers.each do |server|
-        disconnect_server_if_connected(server)
+      if disconnect != false
+        removed_servers.each do |server|
+          disconnect_server_if_connected(server)
+        end
       end
-      removed_servers.any?
+      if disconnect != false
+        removed_servers.any?
+      else
+        removed_servers
+      end
     end
 
     # @api private
@@ -727,6 +741,17 @@ module Mongo
     # @api private
     def servers_list
       @update_lock.synchronize { @servers.dup }
+    end
+
+    # @api private
+    def disconnect_server_if_connected(server)
+      if server.connected?
+        server.disconnect!
+        publish_sdam_event(
+          Monitoring::SERVER_CLOSED,
+          Monitoring::Event::ServerClosed.new(server.address, topology)
+        )
+      end
     end
 
     private
@@ -773,16 +798,6 @@ module Mongo
         !!topology.logical_session_timeout
       rescue Error::NoServerAvailable
         false
-      end
-    end
-
-    def disconnect_server_if_connected(server)
-      if server.connected?
-        server.disconnect!
-        publish_sdam_event(
-          Monitoring::SERVER_CLOSED,
-          Monitoring::Event::ServerClosed.new(server.address, topology)
-        )
       end
     end
   end

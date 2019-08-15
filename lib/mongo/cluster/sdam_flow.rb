@@ -30,6 +30,7 @@ class Mongo::Cluster
       @topology = cluster.topology
       @original_desc = @previous_desc = previous_desc
       @updated_desc = updated_desc
+      @servers_to_disconnect = []
     end
 
     attr_reader :cluster
@@ -356,7 +357,7 @@ class Mongo::Cluster
     # Removes specified server from topology and warns if the topology ends
     # up with an empty server list as a result
     def do_remove(address_str)
-      cluster.remove(address_str)
+      @servers_to_disconnect += cluster.remove(address_str, disconnect: false)
       if servers_list.empty?
         log_warn(
           "Topology now has no servers - this is likely a misconfiguration of the cluster and/or the application"
@@ -449,6 +450,11 @@ class Mongo::Cluster
       @topology = topology.class.new(topology.options, topology.monitoring, cluster)
       # This sends the SDAM event
       cluster.update_topology(topology)
+
+      @servers_to_disconnect.each do |server|
+        cluster.disconnect_server_if_connected(server)
+      end
+      @servers_to_disconnect = []
     end
 
     # If the server being processed is identified as data bearing, creates the
