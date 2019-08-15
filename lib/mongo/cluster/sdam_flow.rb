@@ -358,7 +358,21 @@ class Mongo::Cluster
     # Removes specified server from topology and warns if the topology ends
     # up with an empty server list as a result
     def do_remove(address_str)
-      @servers_to_disconnect += cluster.remove(address_str, disconnect: false)
+      servers = cluster.remove(address_str, disconnect: false)
+      servers.each do |server|
+        # We need to publish server closed event here, but we cannot close
+        # the server because it could be the server owning the monitor in
+        # whose thread this flow is presently executing, in which case closing
+        # the server can terminate the thread and leave SDAM processing
+        # incomplete. Thus we have to remove the server from the cluster,
+        # publish the event, but do not call disconnect on the server until
+        # the very end when all processing has completed.
+        publish_sdam_event(
+          Mongo::Monitoring::SERVER_CLOSED,
+          Mongo::Monitoring::Event::ServerClosed.new(server.address, cluster.topology)
+        )
+      end
+      @servers_to_disconnect += servers
       if servers_list.empty?
         log_warn(
           "Topology now has no servers - this is likely a misconfiguration of the cluster and/or the application"
@@ -454,10 +468,12 @@ class Mongo::Cluster
     end
 
     def disconnect_servers
-      @servers_to_disconnect.each do |server|
-        cluster.disconnect_server_if_connected(server)
+      while server = @servers_to_disconnect.shift
+        if server.connected?
+          # Do not publish server closed event, as this was already done
+          server.disconnect!
+        end
       end
-      @servers_to_disconnect = []
     end
 
     # If the server being processed is identified as data bearing, creates the
