@@ -143,6 +143,7 @@ class Mongo::Cluster
       end
 
       commit_changes
+      disconnect_servers
     end
 
     # Transitions from unknown to single topology type, when a standalone
@@ -450,7 +451,9 @@ class Mongo::Cluster
       @topology = topology.class.new(topology.options, topology.monitoring, cluster)
       # This sends the SDAM event
       cluster.update_topology(topology)
+    end
 
+    def disconnect_servers
       @servers_to_disconnect.each do |server|
         cluster.disconnect_server_if_connected(server)
       end
