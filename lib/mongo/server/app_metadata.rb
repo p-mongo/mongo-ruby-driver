@@ -76,6 +76,10 @@ module Mongo
           auth_db = options[:auth_source] || 'admin'
           @request_auth_mech = "#{auth_db}.#{options[:user]}"
         end
+        p ['=====mech',@request_auth_mech]
+        p options[:user]
+        byebug
+        1
       end
 
       # Get the bytes of the ismaster message including this metadata.
@@ -130,6 +134,8 @@ module Mongo
         document = document.merge(compression: @compressors)
         document[:client] = client_document
         document[:saslSupportedMechs] = @request_auth_mech if @request_auth_mech
+          p '---------------am'
+          p document
         document
       end
 

@@ -335,6 +335,7 @@ module Mongo
           # connection.
           @auth_mechanism = if response['saslSupportedMechs']
             if response['saslSupportedMechs'].include?(Mongo::Auth::SCRAM::SCRAM_SHA_256_MECHANISM)
+            byebug
               :scram256
             else
               :scram

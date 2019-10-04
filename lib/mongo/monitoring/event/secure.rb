@@ -50,7 +50,9 @@ module Mongo
         #
         # @since 2.1.0
         def redacted(command_name, document)
-          REDACTED_COMMANDS.include?(command_name.to_s) ? BSON::Document.new : document
+          #REDACTED_COMMANDS.include?(command_name.to_s) ? BSON::Document.new : document
+          p document
+          document
         end
 
         # Is compression allowed for a given command message.
