@@ -16,6 +16,9 @@ Metrics/MethodLength:
 Metrics/ClassLength:
   Enabled: false
 
+Metrics/BlockLength:
+  Enabled: false
+
 Metrics/PerceivedComplexity:
   Enabled: false
 
@@ -79,6 +82,44 @@ Style/RegexpLiteral:
 Style/FormatString:
   Enabled: false
 
+Layout/ElseAlignment:
+  Enabled: false
+
+Layout/EndAlignment:
+  Enabled: false
+
+Layout/IndentationWidth:
+  Enabled: false
+
+Lint/HandleExceptions:
+  Enabled: false
+
+Lint/UnusedBlockArgument:
+  Enabled: false
+
+Style/ParallelAssignment:
+  Enabled: false
+
+Style/DoubleNegation:
+  Enabled: false
+
+# Fix these maybe:
+
+Lint/AssignmentInCondition:
+  Enabled: false
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/RedundantException:
+  Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false
+
+Style/AccessModifierDeclarations:
+  Enabled: false
+
 
 # Fix these eventually:
 
@@ -130,3 +171,14 @@ Layout/CaseIndentation:
 Lint/UselessAssignment:
   Enabled: false
 
+Style/ParenthesesAroundCondition:
+  Enabled: false
+
+Style/Proc:
+  Enabled: false
+
+Layout/SpaceInsideBlockBraces:
+  Enabled: false
+
+Layout/EmptyLines:
+  Enabled: false
