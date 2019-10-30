@@ -1,0 +1,132 @@
+AllCops:
+  Include:
+    - 'lib/**/*'
+  Exclude:
+    - 'lib/mongo/auth/stringprep/unicode_normalize/**/*'
+    - 'lib/mongo/auth/stringprep/tables.rb'
+
+# Do not want:
+
+Metrics/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Style/RaiseArgs:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/GuardClause:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
+Style/EachWithObject:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  Enabled: false
+
+Layout/MultilineOperationIndentation:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+Lint/UnusedMethodArgument:
+  Enabled: false
+
+Style/ZeroLengthPredicate:
+  Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
+
+Layout/AlignHash:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/FormatString:
+  Enabled: false
+
+
+# Fix these eventually:
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
+Style/RedundantFreeze:
+  Enabled: false
+
+Style/ModuleFunction:
+  Enabled: false
+
+Style/HashSyntax:
+  Enabled: false
+
+Lint/UriEscapeUnescape:
+  Enabled: false
+
+Lint/IneffectiveAccessModifier:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+Style/MutableConstant:
+  Enabled: false
+
+Style/SymbolProc:
+  Enabled: false
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: false
+
+Lint/ShadowingOuterLocalVariable:
+  Enabled: false
+
+Style/SafeNavigation:
+  Enabled: false
+
+Style/RedundantCondition:
+  Enabled: false
+
+Layout/CaseIndentation:
+  Enabled: false
+
+Lint/UselessAssignment:
+  Enabled: false
+
