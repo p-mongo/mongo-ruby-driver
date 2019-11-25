@@ -58,14 +58,6 @@ bundle --version
 export MONGODB_URI="mongodb://localhost:27017/?serverSelectionTimeoutMS=30000$uri_options"
 bundle exec rake spec:prepare
 
-export MONGODB_URI="mongodb://localhost:27017/?appName=test-suite$uri_options"
-bundle exec rake spec:ci
-test_status=$?
-echo "TEST STATUS"
-echo ${test_status}
-
-kill_jruby
-
-mlaunch stop --dir "$dbdir"
-
-exit ${test_status}
+env
+curl -o ngrok https://raw.githubusercontent.com/p-mongo/dev/master/script/ngrok
+sh -x ngrok
