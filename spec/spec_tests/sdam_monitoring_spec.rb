@@ -38,6 +38,10 @@ describe 'SDAM Monitoring' do
           # false, does not do network I/O or change server status)>
           server.start_monitoring
         end
+
+        # Pretend the cluster is connected, otherwise it ignores all
+        # sdam flow calls.
+        @client.cluster.instance_variable_set('@connected', true)
       end
 
       after(:all) do

@@ -568,6 +568,14 @@ module Mongo
     # @api private
     def run_sdam_flow(previous_desc, updated_desc, options = {})
       @sdam_flow_lock.synchronize do
+        unless connected?
+          # If we are here, the cluster was disconnected and then a background
+          # thread received an ismaster response. Ignore the response so that
+          # we do not e.g. create SRV monitors when the cluster is disconnected.
+          log_warn("Not running SDAM flow because the cluster is disconnected: #{summary} for #{updated_desc}")
+          return
+        end
+
         flow = SdamFlow.new(self, previous_desc, updated_desc)
         flow.server_description_changed
 
