@@ -69,11 +69,13 @@ module Mongo
     # The multi field constant.
     #
     # @since 2.1.0
+    # @deprecated
     MULTI = 'multi'.freeze
 
     # The upsert field constant.
     #
     # @since 2.1.0
+    # @deprecated
     UPSERT = 'upsert'.freeze
 
     # The collation field constant.

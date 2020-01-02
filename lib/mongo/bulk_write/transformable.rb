@@ -105,7 +105,7 @@ module Mongo
         {
           Operation::Q => doc[:filter],
           Operation::U => doc[:update],
-          Operation::MULTI => true,
+          multi: true,
         }.tap do |d|
           if doc[:upsert]
             d[:upsert] = true

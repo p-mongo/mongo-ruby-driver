@@ -122,6 +122,7 @@ module Mongo
         # The multi constant.
         #
         # @since 2.2.0
+        # @deprecated
         MULTI = 'multi'.freeze
 
         # The u constant.
@@ -142,6 +143,7 @@ module Mongo
         # The upsert constant.
         #
         # @since 2.2.0
+        # @deprecated
         UPSERT = 'upsert'.freeze
 
         # @return [ String ] collection The name of the collection.
@@ -193,10 +195,10 @@ module Mongo
           updates.store(Message::Q, filter)
           updates.store(U, update)
           if flags.include?(:multi_update)
-            updates.store(MULTI, true)
+            updates.store(:multi, true)
           end
           if flags.include?(:upsert)
-            updates.store(UPSERT, true)
+            updates.store(:upsert, true)
           end
           document.store(UPDATE, collection)
           document.store(Message::ORDERED, true)

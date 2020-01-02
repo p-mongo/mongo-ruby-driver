@@ -36,8 +36,8 @@ module Mongo
 
         def message(server)
           flags = []
-          flags << :multi_update if selector[Operation::MULTI]
-          flags << :upsert if selector[Operation::UPSERT]
+          flags << :multi_update if selector[:multi]
+          flags << :upsert if selector[:upsert]
 
           Protocol::Update.new(
               db_name,

@@ -278,7 +278,7 @@ module Mongo
         def update_many(spec, opts = {})
           update_doc = { Operation::Q => filter,
                          Operation::U => spec,
-                         Operation::MULTI => true,
+                         multi: true,
                          }
           if opts[:upsert]
             update_doc[:upsert] = true
