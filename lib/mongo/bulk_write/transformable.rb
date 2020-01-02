@@ -57,8 +57,8 @@ module Mongo
       # @since 2.1.0
       DELETE_MANY_TRANSFORM = ->(doc){
         {
-          Operation::Q => doc[:filter],
-          Operation::LIMIT => 0,
+          q: doc[:filter],
+          limit: 0,
         }.tap do |d|
           d[Operation::COLLATION] = doc[:collation] if doc[:collation]
         end
@@ -69,8 +69,8 @@ module Mongo
       # @since 2.1.0
       DELETE_ONE_TRANSFORM = ->(doc){
         {
-          Operation::Q => doc[:filter],
-          Operation::LIMIT => 1,
+          q: doc[:filter],
+          limit: 1,
         }.tap do |d|
           d[Operation::COLLATION] = doc[:collation] if doc[:collation]
         end
@@ -88,8 +88,8 @@ module Mongo
       # @since 2.1.0
       REPLACE_ONE_TRANSFORM = ->(doc){
         {
-          Operation::Q => doc[:filter],
-          Operation::U => doc[:replacement],
+          q: doc[:filter],
+          u: doc[:replacement],
         }.tap do |d|
           if doc[:upsert]
             d[:upsert] = true
