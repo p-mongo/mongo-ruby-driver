@@ -413,6 +413,13 @@ module Mongo
         value = decode(value)
         add_uri_option(key, value, uri_options)
       end
+      if wc = uri_options[:write_concern]
+        begin
+          WriteConcern.get(wc)
+        rescue Error::InvalidWriteConcern => e
+          raise_invalid_error!("#{e.class}: #{e}")
+        end
+      end
       uri_options
     end
 
