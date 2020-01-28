@@ -1,5 +1,5 @@
-description: "Monitoring a standalone connection - suppress update events for equal server descriptions"
-uri: "mongodb://a:27017"
+description: "Monitoring a forced standalone connection - suppress update events for equal server descriptions"
+uri: "mongodb://a:27017/?connect=direct"
 phases:
   -
     responses:
