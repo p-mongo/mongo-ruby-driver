@@ -58,16 +58,18 @@ class Mongo::Cluster
     def update_server_descriptions
       servers_list.each do |server|
         if server.address == updated_desc.address
-          changed = server.description != updated_desc
+          @server_description_changed = server.description != updated_desc
+
           # Always update server description, so that fields that do not
           # affect description equality comparisons but are part of the
           # description are updated.
           server.update_description(updated_desc)
           server.update_last_scan
-          # But return if there was a content difference between
-          # descriptions, and if there wasn't we'll skip the remainder of
-          # sdam flow
-          return changed
+
+          # If there was no content difference between descriptions, we
+          # still need to run sdam flow, but if the flow produces no change
+          # in topology we will omit sending events.
+          return true
         end
       end
       false
@@ -413,6 +415,8 @@ class Mongo::Cluster
     # Removes the server whose description we are processing from the
     # topology.
     def remove
+      # Force event publication prior to server removal.
+      @server_description_changed = true
       publish_description_change_event
       do_remove(updated_desc.address.to_s)
     end
@@ -443,6 +447,11 @@ class Mongo::Cluster
     end
 
     def publish_description_change_event
+      if !@server_description_changed && @topology == cluster.topology
+        @need_topology_changed_event = false
+        return
+      end
+
       # updated_desc here may not be the description we received from
       # the server - in case of a stale primary, the server reported itself
       # as being a primary but updated_desc here will be unknown.
@@ -517,6 +526,10 @@ class Mongo::Cluster
         return
       end
       if updated_desc.object_id == previous_desc.object_id
+        return
+      end
+
+      if @need_topology_changed_event == false
         return
       end
 
