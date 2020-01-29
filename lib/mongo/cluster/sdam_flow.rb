@@ -133,6 +133,10 @@ class Mongo::Cluster
         return
       end
 
+      @previous_server_descriptions = servers_list.map do |server|
+        [server.address.to_s, server.description]
+      end
+
       unless update_server_descriptions
         # All of the transitions require that server whose updated_desc we are
         # processing is still in the cluster (i.e., was not removed as a result
@@ -415,8 +419,6 @@ class Mongo::Cluster
     # Removes the server whose description we are processing from the
     # topology.
     def remove
-      # Force event publication prior to server removal.
-      @server_description_changed = true
       publish_description_change_event
       do_remove(updated_desc.address.to_s)
     end
@@ -447,8 +449,13 @@ class Mongo::Cluster
     end
 
     def publish_description_change_event
-      if !@server_description_changed && @topology == cluster.topology
-        @need_topology_changed_event = false
+      # This method may be invoked when server description definitely changed
+      # but prior to the topology getting updated. Therefore we check both
+      # server description changes and overall topology changes. When this
+      # method is called at the end of SDAM flow as part of "commit changes"
+      # step, server description change is incorporated into the topology
+      # change.
+      unless @server_description_changed || topology_effectively_changed?
         return
       end
 
@@ -504,7 +511,7 @@ class Mongo::Cluster
       start_pool_if_data_bearing
 
       topology_changed_event_published = false
-      if topology.object_id != cluster.topology.object_id || @need_topology_changed_event
+      if !topology.equal?(cluster.topology) || @need_topology_changed_event
         # We are about to publish topology changed event.
         # Recreate the topology instance to get its server descriptions
         # up to date.
@@ -529,7 +536,7 @@ class Mongo::Cluster
         return
       end
 
-      if @need_topology_changed_event == false
+      unless topology_effectively_changed?
         return
       end
 
@@ -599,6 +606,27 @@ class Mongo::Cluster
     # whether to clear the server's connection pool.
     def became_unknown?
       updated_desc.unknown? && !original_desc.unknown?
+    end
+
+    # Returns whether topology meaningfully changed as a result of running
+    # SDAM flow.
+    #
+    # The spec defines topology equality through equality of topology types
+    # and server descriptions in each topology; this definition is not usable
+    # by us because our topology objects do not hold server descriptions and
+    # are instead "live". Thus we have to store the full list of server
+    # descriptions at the beginning of SDAM flow and compare them to the
+    # current ones.
+    def topology_effectively_changed?
+      unless topology.equal?(cluster.topology)
+        return true
+      end
+
+      server_descriptions = servers_list.map do |server|
+        [server.address.to_s, server.description]
+      end
+
+      @previous_server_descriptions != server_descriptions
     end
   end
 end
