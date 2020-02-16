@@ -282,3 +282,21 @@ install_mlaunch_pip() {
   export PATH="$pythonpath/bin":$PATH
   export PYTHONPATH="$pythonpath"
 }
+
+install_mlaunch_git() {
+  repo=$1
+  branch=$2
+  python -V
+  python3 -V
+  pythonpath="$MONGO_ORCHESTRATION_HOME"/python
+  # The scripts in a python installation have shebangs pointing to the
+  # prefix, which doesn't work for us because we unpack toolchain to a
+  # different directory than prefix used for building. Work around this by
+  # explicitly running pip3 with python.
+  python3 `which pip3` install -t "$pythonpath" psutil pymongo
+  export PATH="$pythonpath/bin":$PATH
+  export PYTHONPATH="$pythonpath"
+  git clone $repo mlaunch
+  cd mlaunch
+  git checkout origin/$branch
+}
