@@ -24,9 +24,18 @@ RSpec.configure do |config|
     end
   end
 
-  config.after do
-    LocalResourceRegistry.instance.close_all
-    ClientRegistry.instance.close_local_clients
+  # RSpec seems to run all after hooks before returning to around hooks,
+  # even if around hooks are defined later in program execution.
+  # This means in order for local client cleanup to not interfere with
+  # global assertions (guarded via scope_expectations), the cleanup has to
+  # happen in an around hook also.
+  config.around do |example|
+    begin
+      example.run
+    ensure
+      LocalResourceRegistry.instance.close_all
+      ClientRegistry.instance.close_local_clients
+    end
   end
 end
 
