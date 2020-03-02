@@ -53,6 +53,14 @@ module CommonShortcuts
         end
       end
     end
+
+    def scope_expectations
+      around do |example|
+        RSpec::Mocks.with_temporary_scope do
+          example.run
+        end
+      end
+    end
   end
 
   module InstanceMethods

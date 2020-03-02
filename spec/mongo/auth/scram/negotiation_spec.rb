@@ -194,9 +194,13 @@ describe 'SCRAM-SHA auth mechanism negotiation' do
             :scram
           end
 
-          it 'authenticates successfully' do
+          before do
             create_user!
+          end
 
+          scope_expectations
+
+          it 'authenticates successfully' do
             mechanism = nil
             expect(Mongo::Auth).to receive(:get).and_wrap_original do |m, user|
               # copy mechanism here rather than whole user
@@ -205,7 +209,9 @@ describe 'SCRAM-SHA auth mechanism negotiation' do
               m.call(user)
             end
 
-            expect { result }.not_to raise_error
+            expect do
+              result
+            end.not_to raise_error
             expect(mechanism).to eq(:scram)
           end
         end
@@ -216,9 +222,13 @@ describe 'SCRAM-SHA auth mechanism negotiation' do
             :scram256
           end
 
-          it 'authenticates successfully with SCRAM-SHA-256' do
+          before do
             create_user!
+          end
 
+          scope_expectations
+
+          it 'authenticates successfully with SCRAM-SHA-256' do
             mechanism = nil
             expect(Mongo::Auth).to receive(:get).and_wrap_original do |m, user|
               # copy mechanism here rather than whole user
@@ -463,10 +473,14 @@ describe 'SCRAM-SHA auth mechanism negotiation' do
             :scram
           end
 
-          it 'authenticates successfully' do
+          before do
             create_user!
             expect(user.mechanism).to eq(:scram)
+          end
 
+          scope_expectations
+
+          it 'authenticates successfully' do
             mechanism = nil
             expect(Mongo::Auth).to receive(:get).and_wrap_original do |m, user|
               # copy mechanism here rather than whole user
@@ -486,9 +500,13 @@ describe 'SCRAM-SHA auth mechanism negotiation' do
             :scram256
           end
 
-          it 'authenticates successfully with SCRAM-SHA-256' do
+          before do
             create_user!
+          end
 
+          scope_expectations
+
+          it 'authenticates successfully with SCRAM-SHA-256' do
             mechanism = nil
             expect(Mongo::Auth).to receive(:get).and_wrap_original do |m, user|
               # copy mechanism here rather than whole user
