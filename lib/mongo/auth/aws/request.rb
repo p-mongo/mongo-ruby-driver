@@ -158,7 +158,7 @@ module Mongo
           headers_to_sign.delete('content-type')
           headers_to_sign.delete('x-amz-date')
           #headers_to_sign.delete('x-mongodb-gs2-cb-flag')
-          headers_to_sign.delete('x-mongodb-server-nonce')
+          #headers_to_sign.delete('x-mongodb-server-nonce')
           p headers_to_sign
           headers_to_sign
         end
