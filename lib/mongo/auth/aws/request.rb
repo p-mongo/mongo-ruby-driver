@@ -156,6 +156,7 @@ module Mongo
           end
           headers_to_sign.delete('content-length')
           headers_to_sign.delete('content-type')
+          headers_to_sign.delete('x-amz-date')
           p headers_to_sign
           headers_to_sign
         end
