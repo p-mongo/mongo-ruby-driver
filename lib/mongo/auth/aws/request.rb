@@ -154,6 +154,9 @@ module Mongo
             next if write_key == 'x-amz-security-token'
             headers_to_sign[write_key] = headers[key]
           end
+          headers_to_sign.delete('content-length')
+          headers_to_sign.delete('content-type')
+          headers_to_sign.delete('host')
           p headers_to_sign
           headers_to_sign
         end
