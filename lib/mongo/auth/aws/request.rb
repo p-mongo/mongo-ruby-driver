@@ -154,6 +154,7 @@ module Mongo
             next if write_key == 'x-amz-security-token'
             headers_to_sign[write_key] = headers[key]
           end
+          p headers_to_sign
           headers_to_sign
         end
 
@@ -222,6 +223,7 @@ module Mongo
             headers.each do |k, v|
               req[k] = v
             end
+            puts authorization
             req['authorization'] = authorization
             req['accept'] = 'application/json'
             req.body = STS_REQUEST_BODY
