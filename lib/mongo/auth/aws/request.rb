@@ -151,7 +151,7 @@ module Mongo
             # Server has a fixed set of headers it assumes are going
             # to be signed by the client, and x-amz-security-token is not
             # one of them.
-            next if write_key == 'x-amz-security-token'
+            #next if write_key == 'x-amz-security-token'
             headers_to_sign[write_key] = headers[key]
           end
           headers_to_sign.delete('content-length')
