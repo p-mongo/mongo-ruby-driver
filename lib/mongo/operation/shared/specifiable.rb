@@ -538,7 +538,7 @@ module Mongo
       # @return [ Hash ] The command.
       #
       # @since 2.5.2
-      def command(connection = nil)
+      def command(connection)
         selector(connection)
       end
 
