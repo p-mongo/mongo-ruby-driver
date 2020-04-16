@@ -33,8 +33,6 @@ describe 'Server' do
 
     context 'unknown server in disconnected cluster' do
       before do
-        skip "Skipping this one for now."
-
         client.close
         server.unknown!
         expect(server).to be_unknown
