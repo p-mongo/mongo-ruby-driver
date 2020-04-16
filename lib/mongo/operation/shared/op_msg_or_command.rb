@@ -23,7 +23,6 @@ module Mongo
       include PolymorphicLookup
 
       def execute(server, client:, options: {})
-        raise "stack trace" if server.is_a?(Mongo::Server::Connection)
         server.with_connection do |connection|
           operation = final_operation(connection)
           operation.execute(connection, client: client, options: options)
