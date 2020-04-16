@@ -333,6 +333,7 @@ module Mongo
       # @return [ Hash ] The options.
       #
       # @since 2.0.0
+      def options(connection)
         spec[OPTIONS] || {}
       end
 
