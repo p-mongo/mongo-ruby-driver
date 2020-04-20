@@ -347,8 +347,9 @@ module Mongo
           e
         end
 
-        e.add_note("on #{address}") if e.is_a?(Mongo::Error)
-        raise e
+        error.add_note("on #{address}") if error.is_a?(Mongo::Error)
+
+        raise error
       end
     end
 

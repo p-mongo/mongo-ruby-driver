@@ -78,6 +78,8 @@ describe Mongo::Operation::Find::Legacy do
 
       let(:secondary_server_single) do
         double('secondary_server').tap do |server|
+          allow(server).to receive(:mongos?) { false }
+          allow(server).to receive(:standalone?) { false }
           allow(server).to receive(:with_connection).and_yield(connection)
           allow(server).to receive(:cluster) { cluster_single }
         end
