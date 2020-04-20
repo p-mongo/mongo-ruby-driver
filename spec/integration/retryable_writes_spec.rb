@@ -200,7 +200,7 @@ describe 'Retryable writes integration tests' do
                                                            primary_connection.send(:ssl_options))
             good_socket = primary_connection.address.socket(primary_connection.socket_timeout,
                                                             primary_connection.send(:ssl_options))
-            allow(bad_socket).to receive(:write).and_raise(second_error)
+            allow(bad_socket.instance_variable_get(:@socket)).to receive(:write).and_raise(second_error)
             allow(primary_connection.address).to receive(:socket).and_return(bad_socket, good_socket)
           end
 
@@ -218,9 +218,18 @@ describe 'Retryable writes integration tests' do
             end
 
             it 'indicates server used for operation' do
+              address_str = ClusterConfig.instance.primary_address_str
+
+              diagnostics_regex = if address_str.include?('localhost')
+                alternate_address_str = address_str.gsub('localhost', '127.0.0.1')
+                /on (#{address_str}|#{alternate_address_str})/
+              else
+                /on #{address_str}/
+              end
+
               expect do
                 operation
-              end.to raise_error(Mongo::Error, /on #{ClusterConfig.instance.primary_address_str}/)
+              end.to raise_error(Mongo::Error, diagnostics_regex)
             end
 
             it 'indicates second attempt' do

@@ -42,6 +42,7 @@ module Mongo
         unless @notes
           @notes = []
         end
+
         @notes << note
       end
 
@@ -56,7 +57,7 @@ module Mongo
       def notes_tail
         msg = ''
         unless notes.empty?
-          msg += " (#{notes.join(', ')})"
+          msg += " (#{notes.uniq.join(', ')})"
         end
         msg
       end
