@@ -335,21 +335,15 @@ module Mongo
     def handle_errors
       begin
         yield
+      rescue Errno::ETIMEDOUT => e
+        raise Error::SocketTimeoutError, "#{e.class}: #{e} (for #{address})"
+      rescue IOError, SystemCallError => e
+        raise Error::SocketError, "#{e.class}: #{e} (for #{address})"
+      rescue OpenSSL::SSL::SSLError => e
+        raise Error::SocketError, "#{e.class}: #{e} (for #{address}) (#{SSL_ERROR})"
       rescue => e
-        error = case e
-        when Errno::ETIMEDOUT
-          Error::SocketTimeoutError.new("#{e.class}: #{e} (for #{address})")
-        when IOError, SystemCallError
-          Error::SocketError.new("#{e.class}: #{e} (for #{address})")
-        when OpenSSL::SSL::SSLError
-          Error::SocketError.new("#{e.class}: #{e} (for #{address}) (#{SSL_ERROR})")
-        else
-          e
-        end
-
-        error.add_note("on #{address}") if error.is_a?(Mongo::Error)
-
-        raise error
+        e.add_note("on #{address}") if e.is_a?(Mongo::Error)
+        raise e
       end
     end
 
