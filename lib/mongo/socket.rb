@@ -336,7 +336,7 @@ module Mongo
       begin
         yield
       rescue => e
-        error = case e.class
+        error = case e
         when Errno::ETIMEDOUT
           Error::SocketTimeoutError.new("#{e.class}: #{e} (for #{address})")
         when IOError, SystemCallError
