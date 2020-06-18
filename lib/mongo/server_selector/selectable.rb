@@ -453,6 +453,7 @@ module Mongo
           end
         else
           max_write_date = candidates.collect(&:last_write_date).max
+          byebug unless max_write_date
           candidates.select do |server|
             validate_max_staleness_support!(server)
             staleness = max_write_date - server.last_write_date + server.cluster.heartbeat_interval

@@ -122,9 +122,12 @@ describe 'Max Staleness Spec' do
       end
 
       before do
-        allow(cluster).to receive(:servers).and_return(candidate_servers)
-        # For diagnostic message
         allow(cluster).to receive(:servers_list).and_return(candidate_servers)
+        allow(cluster).to receive(:servers) do
+          # Copy Cluster#servers definition because clusters is a double
+          #byebug
+          topology.servers(cluster.servers_list)
+        end
         allow(cluster).to receive(:addresses).and_return(candidate_servers.map(&:address))
       end
 
