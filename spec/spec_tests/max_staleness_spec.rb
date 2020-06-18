@@ -93,11 +93,8 @@ describe 'Max Staleness Spec' do
           options.merge(monitoring_io: false))
       end
 
-      let(:suitable_servers) do
-        spec.suitable_servers.collect do |server|
-          Mongo::Server.new(Mongo::Address.new(server['address']), cluster, monitoring, listeners,
-            options.merge(monitoring_io: false))
-        end
+      let(:expected_suitable_descriptions) do
+        spec.suitable_descriptions.map { |desc| desc['address'] }
       end
 
       let(:server_selector_definition) do
@@ -143,8 +140,12 @@ describe 'Max Staleness Spec' do
             server_selector.select_server(cluster).should == server_in_latency_window
           end
 
+          let(:actual_suitable_descriptions) do
+            server_selector.send(:select, cluster.servers).map(&:address).map(&:seed)
+          end
+
           it 'identifies all suitable servers' do
-            #expect(server_selector.send(:select, cluster.servers)).to match_array(suitable_servers)
+            expect(actual_suitable_descriptions).to match_array(expected_suitable_descriptions)
           end
 
         else
