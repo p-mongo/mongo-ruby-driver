@@ -43,11 +43,12 @@ describe 'Max Staleness Spec' do
           SpecConfig.instance.test_options.dup.tap do |opts|
             opts.delete(:heartbeat_frequency)
           end
-        end.merge!(server_selection_timeout: 0.2, connect_timeout: 0.1)
+        end.merge!(server_selection_timeout: 0.1, connect_timeout: 0.1)
       end
 
       let(:cluster) do
         double('cluster').tap do |c|
+          allow(c).to receive(:server_selection_semaphore)
           allow(c).to receive(:connected?).and_return(true)
           allow(c).to receive(:summary)
           allow(c).to receive(:topology).and_return(topology)
@@ -122,6 +123,8 @@ describe 'Max Staleness Spec' do
 
       before do
         allow(cluster).to receive(:servers).and_return(candidate_servers)
+        # For diagnostic message
+        allow(cluster).to receive(:servers_list).and_return(candidate_servers)
         allow(cluster).to receive(:addresses).and_return(candidate_servers.map(&:address))
       end
 
