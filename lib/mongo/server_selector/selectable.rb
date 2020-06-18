@@ -183,6 +183,7 @@ module Mongo
         if cluster.replica_set?
           validate_max_staleness_value_early!
         end
+
         if cluster.addresses.empty?
           if Lint.enabled?
             unless cluster.servers.empty?
@@ -192,12 +193,14 @@ module Mongo
           msg = "Cluster has no addresses, and therefore will never have a server"
           raise Error::NoServerAvailable.new(self, cluster, msg)
         end
+
 =begin Add this check in version 3.0.0
         unless cluster.connected?
           msg = 'Cluster is disconnected'
           raise Error::NoServerAvailable.new(self, cluster, msg)
         end
 =end
+
         loop do
           servers = candidates(cluster)
           if Lint.enabled?
@@ -308,7 +311,9 @@ module Mongo
       # @since 2.4.0
       def candidates(cluster)
         if cluster.single?
-          cluster.servers.each { |server| validate_max_staleness_support!(server) }
+          cluster.servers.each do |server|
+            validate_max_staleness_support!(server)
+          end
         elsif cluster.sharded?
           local_threshold = local_threshold_with_cluster(cluster)
           near_servers(cluster.servers, local_threshold).each do |server|

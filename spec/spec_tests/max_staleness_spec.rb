@@ -79,7 +79,7 @@ describe 'Max Staleness Spec' do
             allow(s).to receive(:primary?).and_return(server['type'] == 'RSPrimary')
             allow(s).to receive(:connectable?).and_return(true)
             allow(s).to receive(:last_write_date).and_return(
-              Time.at(server['lastWrite']['lastWriteDate']['$numberLong'].to_f / 1000)) if server['lastWrite']
+              Time.at(server['lastWrite']['lastWriteDate'].to_f / 1000)) if server['lastWrite']
             allow(s).to receive(:last_scan).and_return(
               Time.at(server['lastUpdateTime'].to_f / 1000))
             allow(s).to receive(:features).and_return(features)
@@ -87,8 +87,14 @@ describe 'Max Staleness Spec' do
         end
       end
 
-      let(:in_latency_window) do
-        spec.in_latency_window.collect do |server|
+      let(:server_in_latency_window) do
+        description = spec.description_in_latency_window
+        Mongo::Server.new(Mongo::Address.new(description['address']), cluster, monitoring, listeners,
+          options.merge(monitoring_io: false))
+      end
+
+      let(:suitable_servers) do
+        spec.suitable_servers.collect do |server|
           Mongo::Server.new(Mongo::Address.new(server['address']), cluster, monitoring, listeners,
             options.merge(monitoring_io: false))
         end
@@ -124,17 +130,21 @@ describe 'Max Staleness Spec' do
         if spec.server_available?
 
           it 'has non-empty suitable servers' do
-            spec.suitable_servers.should be_a(Array)
-            spec.suitable_servers.should_not be_empty
+            spec.suitable_descriptions.should be_a(Array)
+            spec.suitable_descriptions.should_not be_empty
           end
 
-          it 'Finds all suitable servers in the latency window', if: spec.replica_set? do
-            expect(server_selector.send(:select, cluster.servers)).to match_array(in_latency_window)
+          it 'has exactly one server in latency window' do
+            # The spec readme stipulates that there is exactly one server
+            server_in_latency_window.should_not be nil
           end
 
-          it 'Finds the most suitable server in the latency window' do
-            in_latency_window.length.should == 1
-            expect(in_latency_window).to include(server_selector.select_server(cluster))
+          it 'finds the correct server' do
+            server_selector.select_server(cluster).should == server_in_latency_window
+          end
+
+          it 'identifies all suitable servers' do
+            #expect(server_selector.send(:select, cluster.servers)).to match_array(suitable_servers)
           end
 
         else
@@ -142,7 +152,7 @@ describe 'Max Staleness Spec' do
           # Runner does not handle non-empty suitable servers with
           # no servers in latency window.
           it 'has empty suitable servers' do
-            expect(spec.suitable_servers).to eq([])
+            expect(spec.suitable_descriptions).to eq([])
           end
 
           it 'Raises a NoServerAvailable Exception' do
