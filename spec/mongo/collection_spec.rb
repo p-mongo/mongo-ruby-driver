@@ -1737,10 +1737,6 @@ describe Mongo::Collection do
 
     context 'when various options passed in' do
 
-      let(:session) do
-        authorized_client.start_session
-      end
-
       let(:events) do
         subscriber.command_started_events('insert')
       end
@@ -1751,7 +1747,7 @@ describe Mongo::Collection do
 
       let!(:command) do
         Utils.get_command_event(authorized_client, 'insert') do |client|
-          collection.insert_one({name: 'test1'}, session: session, write_concern: {w: 1},
+          collection.insert_one({name: 'test1'}, write_concern: {w: 1},
             bypass_document_validation: true)
         end.command
       end
@@ -1886,13 +1882,9 @@ describe Mongo::Collection do
         ]
       end
 
-      let(:session) do
-        authorized_client.start_session
-      end
-
       let!(:command) do
         Utils.get_command_event(authorized_client, 'insert') do |client|
-          collection.bulk_write(requests, session: session, write_concern: {w: 1},
+          collection.bulk_write(requests, write_concern: {w: 1},
             bypass_document_validation: true)
         end.command
       end
@@ -5395,10 +5387,6 @@ describe Mongo::Collection do
         authorized_collection.insert_one({field: 'test1'})
       end
 
-      let(:session) do
-        authorized_client.start_session
-      end
-
       let(:events) do
         subscriber.command_started_events('findAndModify')
       end
@@ -5410,7 +5398,7 @@ describe Mongo::Collection do
       let!(:command) do
         Utils.get_command_event(authorized_client, 'findAndModify') do |client|
           collection.find_one_and_replace(selector, { '$set' => {field: 'test5'}},
-            :return_document => :after, write_concern: {w: 1}, session: session,
+            :return_document => :after, write_concern: {w: 1},
             upsert: true, bypass_document_validation: false, max_time_ms: 200)
         end.command
       end
