@@ -21,6 +21,35 @@ module Mongo
       # @since 2.1.0
       class CommandFailed < Mongo::Event::Base
 
+        # Create the new event.
+        #
+        # @example Create the event.
+        #
+        # @param [ String ] command_name The name of the command.
+        # @param [ String ] database_name The database_name name.
+        # @param [ Server::Address ] address The server address.
+        # @param [ Integer ] request_id The request id.
+        # @param [ Integer ] operation_id The operation id.
+        # @param [ String ] message The error message.
+        # @param [ BSON::Document ] failure The error document, if any.
+        # @param [ Float ] duration The duration the command took in seconds.
+        #
+        # @since 2.1.0
+        # @api private
+        def initialize(command_name, database_name, address, request_id,
+          operation_id, message, failure, duration, started_event
+        )
+          @command_name = command_name.to_s
+          @database_name = database_name
+          @address = address
+          @request_id = request_id
+          @operation_id = operation_id
+          @message = message
+          @failure = failure
+          @duration = duration
+          @started_event = started_event
+        end
+
         # @return [ Server::Address ] address The server address.
         attr_reader :address
 
@@ -48,32 +77,6 @@ module Mongo
 
         # @return [ Integer ] request_id The request id.
         attr_reader :request_id
-
-        # Create the new event.
-        #
-        # @example Create the event.
-        #
-        # @param [ String ] command_name The name of the command.
-        # @param [ String ] database_name The database_name name.
-        # @param [ Server::Address ] address The server address.
-        # @param [ Integer ] request_id The request id.
-        # @param [ Integer ] operation_id The operation id.
-        # @param [ String ] message The error message.
-        # @param [ BSON::Document ] failure The error document, if any.
-        # @param [ Float ] duration The duration the command took in seconds.
-        #
-        # @since 2.1.0
-        # @api private
-        def initialize(command_name, database_name, address, request_id, operation_id, message, failure, duration)
-          @command_name = command_name.to_s
-          @database_name = database_name
-          @address = address
-          @request_id = request_id
-          @operation_id = operation_id
-          @message = message
-          @failure = failure
-          @duration = duration
-        end
 
         # Returns a concise yet useful summary of the event.
         #

@@ -22,6 +22,20 @@ module Mongo
         # @since 2.9.0
         class ConnectionCheckedOut < Base
 
+          # Create the event.
+          #
+          # @example Create the event.
+          #   ConnectionCheckedOut.new(address, id, pool)
+          #
+          # @since 2.9.0
+          # @api private
+          def initialize(address, id, pool, started_event:)
+            @address = address
+            @connection_id = id
+            @pool = pool
+            @started_event = started_event
+          end
+
           # @return [ Mongo::Address ] address The address of the server that the connection will
           #   connect to.
           #
@@ -39,19 +53,6 @@ module Mongo
           # @since 2.11.0
           # @api experimental
           attr_reader :pool
-
-          # Create the event.
-          #
-          # @example Create the event.
-          #   ConnectionCheckedOut.new(address, id, pool)
-          #
-          # @since 2.9.0
-          # @api private
-          def initialize(address, id, pool)
-            @address = address
-            @connection_id = id
-            @pool = pool
-          end
 
           # Returns a concise yet useful summary of the event.
           #

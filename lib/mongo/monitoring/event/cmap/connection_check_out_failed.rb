@@ -42,6 +42,19 @@ module Mongo
           # @since 2.10.0
           CONNECTION_ERROR = :connection_error
 
+          # Create the event.
+          #
+          # @param [ Address ] address
+          # @param [ Symbol ] reason
+          #
+          # @since 2.9.0
+          # @api private
+          def initialize(address, reason, started_event)
+            @reason = reason
+            @address = address
+            @started_event = started_event
+          end
+
           # @return [ Mongo::Address ] address The address of the server the
           #   connection would have connected to.
           #
@@ -53,18 +66,6 @@ module Mongo
           #
           # @since 2.9.0
           attr_reader :reason
-
-          # Create the event.
-          #
-          # @param [ Address ] address
-          # @param [ Symbol ] reason
-          #
-          # @since 2.9.0
-          # @api private
-          def initialize(address, reason)
-            @reason = reason
-            @address = address
-          end
 
           # Returns a concise yet useful summary of the event.
           #
