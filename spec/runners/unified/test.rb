@@ -372,8 +372,18 @@ module Unified
     end
 
     def kill_sessions
+      c = ClientRegistry.instance.global_client('authorized')
+
+
+      session_ids = c.use('config')['system.sessions'].aggregate(['$listSessions':{}]).map { |s| s['_id'] }
+      p session_ids
+      p c.command(killSessions:session_ids)
+      session_ids = c.use('config')['system.sessions'].aggregate(['$listSessions':{}]).map { |s| s['_id'] }
+      p session_ids
+
+    #byebug
       begin
-        root_authorized_client.command(
+        nil&& root_authorized_client.command(
           killAllSessions: [],
         )
       rescue Mongo::Error::OperationFailure => e
