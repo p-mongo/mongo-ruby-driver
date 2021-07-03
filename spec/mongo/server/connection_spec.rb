@@ -229,12 +229,15 @@ describe Mongo::Server::Connection do
 
       context 'when #handshake! dependency raises a network exception' do
         let(:exception) do
-          Mongo::Error::SocketError.new
+          Mongo::Error::SocketError.new.tap do |exc|
+            allow(exc).to receive(:service_id).and_return('fake')
+          end
         end
 
         let(:error) do
           # The exception is mutated when notes are added to it
-          expect_any_instance_of(Mongo::Socket).to receive(:write).and_raise(exception.dup)
+          expect_any_instance_of(Mongo::Socket).to receive(:write).and_raise(exception)
+          allow(connection).to receive(:service_id).and_return('fake')
           begin
             connection.connect!
           rescue Exception => e
