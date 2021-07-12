@@ -259,6 +259,8 @@ describe Mongo::Grid::FSBucket::Stream::Write do
       context 'when the files collection is empty' do
 
         before do
+          expect(fs.files_collection).to receive(:indexes).and_call_original
+          expect(fs.chunks_collection).to receive(:indexes).and_call_original
           stream.write(file)
         end
 
@@ -327,6 +329,8 @@ describe Mongo::Grid::FSBucket::Stream::Write do
         before do
           support_fs.send(:ensure_indexes!)
           support_fs.files_collection.insert_one(a: 1)
+          expect(fs.files_collection).not_to receive(:indexes)
+          expect(fs.chunks_collection).not_to receive(:indexes)
           stream.write(file)
         end
 
@@ -339,16 +343,18 @@ describe Mongo::Grid::FSBucket::Stream::Write do
         end
       end
 
-      context 'when the index creation is done explicitely' do
+      context 'when the index creation encounters an error' do
 
         before do
           fs.chunks_collection.indexes.create_one(Mongo::Grid::FSBucket::CHUNKS_INDEX, :unique => false)
+          expect(fs.chunks_collection).to receive(:indexes).and_call_original
+          expect(fs.files_collection).not_to receive(:indexes)
         end
 
-        it 'should not raise an error to the user' do
+        it 'raises the error to the user' do
           expect {
             stream.write(file)
-          }.not_to raise_error
+          }.to raise_error(Mongo::Error::OperationFailure)
         end
       end
     end

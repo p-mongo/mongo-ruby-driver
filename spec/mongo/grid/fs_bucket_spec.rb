@@ -412,14 +412,21 @@ describe Mongo::Grid::FSBucket do
 
     context 'when the index creation encounters an error' do
 
-      before do
-        fs.chunks_collection.indexes.create_one(Mongo::Grid::FSBucket::CHUNKS_INDEX, :unique => false)
+      let(:client) do
+        unauthorized_client
       end
 
-      it 'should not raise an error to the user' do
+      before do
+      byebug
+        fs.chunks_collection.indexes.create_one(Mongo::Grid::FSBucket::CHUNKS_INDEX, expireAfterSeconds: 1)
+        #expect(fs.chunks_collection).to receive(:indexes).and_call_original
+        #expect(fs.files_collection).not_to receive(:indexes)
+      end
+
+      it 'raises the error to the user' do
         expect {
           fs.insert_one(file)
-        }.not_to raise_error
+        }.to raise_error(Mongo::Error::OperationFailure)
       end
     end
 
@@ -427,6 +434,8 @@ describe Mongo::Grid::FSBucket do
 
       before do
         support_fs.insert_one(support_file)
+        expect(fs.files_collection).not_to receive(:indexes)
+        expect(fs.chunks_collection).not_to receive(:indexes)
         fs.insert_one(file)
       end
 

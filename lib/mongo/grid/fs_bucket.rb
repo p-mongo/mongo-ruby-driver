@@ -518,6 +518,7 @@ module Mongo
 
       def create_index_if_missing!(collection, index_spec, options = {})
         indexes_view = collection.indexes
+        p indexes_view.to_a
         begin
           if indexes_view.get(index_spec).nil?
             indexes_view.create_one(index_spec, options)
